@@ -98,6 +98,10 @@ class Operator(Mapping):
         return iter(self._d)
     
     
+    def __reversed__(self):
+        return reversed(self._d)
+    
+    
     def keys(self):
         return self._d.keys()
     

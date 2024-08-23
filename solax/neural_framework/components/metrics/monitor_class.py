@@ -108,7 +108,6 @@ class MetricsMonitor:
         Note: The last updates come first.
         """
         if isinstance(s, (Integral, slice)):
-            
             entries = {
                 name: jnp.array(vals)[s]
                 for name, vals in self._data.items()

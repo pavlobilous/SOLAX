@@ -95,15 +95,8 @@ class Basis(Sequence):
     
     
     def __getitem__(self, s):
-        try:
-            s = make_1d_index(len(self), s)
-        except NotImplementedError:
-            return NotImplemented
+        s = make_1d_index(len(self), s)
         return Basis._from_attrs(self._encoding[s], self.bitlen)
-    
-    
-    def __reversed__(self):
-        return self[::-1]
 
 
     def __eq__(self, other):

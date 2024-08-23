@@ -50,15 +50,8 @@ class State(Sequence):
     
                    
     def __getitem__(self, s):
-        try:
-            s = make_1d_index(len(self), s)
-        except NotImplementedError:
-            return NotImplemented
+        s = make_1d_index(len(self), s)
         return State(self.basis[s], self.coeffs[s])
-    
-    
-    def __reversed__(self):
-        return self[::-1]
 
     
     def __eq__(self, other):

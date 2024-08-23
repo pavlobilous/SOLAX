@@ -24,5 +24,5 @@ def make_1d_index(l, s):
         s = np.array(s)
     if isinstance(s, np.ndarray):
         if s.ndim == 1:
-            return s        
-    raise IndexError("Cannot create a 1D index from this.")
+            return s
+    raise TypeError("Cannot create a 1D index from this.")

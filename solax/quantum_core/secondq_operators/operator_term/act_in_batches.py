@@ -26,7 +26,10 @@ def ladders_func(enc_batch, posits_batch, daggers):
         f = map_with_ladseq_vDet_vOpt_np
     else:
         f = map_with_ladseq_pvDet_vOpt
-    return f(enc_batch, posits_batch, daggers)
+    enc, valid = f(enc_batch, posits_batch, daggers)
+    enc = np.asarray(enc)
+    valid = np.where(valid.reshape(-1))[0]
+    return enc, valid
 
 
 def phases_func(enc_batch, bitlen, posits_batch):
@@ -35,7 +38,8 @@ def phases_func(enc_batch, bitlen, posits_batch):
         f = ladseq_phase_vDet_vOpt_np
     else:
         f = ladseq_phase_pvDet_vOpt
-    return f(enc_batch, bitlen, posits_batch)    
+    phs = f(enc_batch, bitlen, posits_batch)
+    return np.asarray(phs)
 
 
 def act_in_batches(basis, state_coeffs, op_term,
@@ -50,9 +54,6 @@ def act_in_batches(basis, state_coeffs, op_term,
     det_track = np.array([], dtype=int) \
                 if det_tracking else None
     
-    if det_tracking:
-        det_arange = np.arange(len(basis))
-    
     det_batches = gen_det_batches(len(basis), det_batch_size, multiple_devices)
     for det_batch_start, det_batch_end, num_pbatches in det_batches:
         
@@ -62,7 +63,7 @@ def act_in_batches(basis, state_coeffs, op_term,
         if state_coeffs is not None:
             state_cfs_batch = state_coeffs[det_batch_start : det_batch_end]
         if det_tracking:
-            det_arange_batch = det_arange[det_batch_start : det_batch_end]
+            det_arange_batch = np.arange(det_batch_start, det_batch_end)
         
         op_batches = gen_op_batches(len(op_term), op_batch_size)
         for op_batch_start, op_batch_end, _ in op_batches:
@@ -70,7 +71,6 @@ def act_in_batches(basis, state_coeffs, op_term,
             posits_batch = op_term.posits[op_batch_start : op_batch_end]  
             res_enc_batch, valid = ladders_func(enc_batch, posits_batch, op_term.daggers)
             res_enc_batch = res_enc_batch.reshape(-1, det_code_len)
-            valid = valid.reshape(-1).astype(bool)
             res_enc_batch = res_enc_batch[valid]
             res_enc = np.concatenate([res_enc, res_enc_batch])
             

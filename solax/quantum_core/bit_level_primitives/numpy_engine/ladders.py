@@ -22,7 +22,7 @@ def map_with_ladder(det_code_vv, bit_posit_v, dagger):
 def map_with_ladseq(det_code, bit_posits, daggers):
     det_code = np.swapaxes(np.tile(det_code, (len(bit_posits), 1, 1)), 0, 1)
     valid = np.ones(shape=(len(det_code), len(bit_posits)), dtype=np.uint8)
-    daggers = np.array(daggers)
+    daggers = np.array(daggers, dtype=np.uint8)
     
     for i in range(1, len(daggers) + 1):
         bit_posit = bit_posits[:, -i]

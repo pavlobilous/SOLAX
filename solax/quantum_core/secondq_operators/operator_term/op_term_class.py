@@ -52,17 +52,10 @@ class OperatorTerm(Sequence):
 
 
     def __getitem__(self, s):
-        try:
-            s = make_1d_index(len(self), s)
-        except IndexError:
-            return NotImplemented
+        s = make_1d_index(len(self), s)
         with manual_squeezing():
             op_term = OperatorTerm(self.daggers, self.posits[s], self.coeffs[s])
         return op_term
-    
-    
-    def __reversed__(self):
-        return self[::-1]
 
 
     @property

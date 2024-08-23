@@ -32,7 +32,7 @@ def map_with_ladseq(det_code, bit_posits, daggers):
     See also help(map_with_ladder).
     """
     valid = 1
-    daggers = jnp.array(daggers)
+    daggers = jnp.array(daggers, dtype=jnp.uint8)
     
     lower = 1
     upper = len(daggers) + 1
