@@ -1,5 +1,6 @@
 import jax
 import numpy as np
+from typing import Generator, Tuple
 
 from ....utils.multi_batching import *
 from ...bit_level_primitives import *
@@ -42,56 +43,46 @@ def phases_func(enc_batch, bitlen, posits_batch):
     return np.asarray(phs)
 
 
-def act_in_batches(basis, state_coeffs, op_term,
-                   det_batch_size, op_batch_size,
-                   multiple_devices: bool,
-                   det_tracking: bool):
-    
+def act_in_batches_generator(
+    basis, state_coeffs, op_term,
+    det_batch_size, op_batch_size,
+    multiple_devices: bool,
+    det_tracking: bool
+) -> Generator[Tuple[np.ndarray, np.ndarray | None, np.ndarray | None], None, None]:
+
+    if len(basis) == 0:
+        raise ValueError("This generator works with Basis objects of len > 0.")
+
     det_code_len = basis._encoding.shape[-1]
-    res_enc = np.array([], dtype=np.uint8).reshape(0,  det_code_len)
-    res_cfs =  np.array([], dtype=state_coeffs.dtype) \
-                if (state_coeffs is not None) else None
-    det_track = np.array([], dtype=int) \
-                if det_tracking else None
-    
+
     det_batches = gen_det_batches(len(basis), det_batch_size, multiple_devices)
     for det_batch_start, det_batch_end, num_pbatches in det_batches:
-        
-        enc_batch = basis._encoding[det_batch_start : det_batch_end]
+        enc_batch = basis._encoding[det_batch_start:det_batch_end]
         enc_batch = enc_batch.reshape(num_pbatches, -1, det_code_len)
         
         if state_coeffs is not None:
-            state_cfs_batch = state_coeffs[det_batch_start : det_batch_end]
+            state_cfs_batch = state_coeffs[det_batch_start:det_batch_end]
         if det_tracking:
             det_arange_batch = np.arange(det_batch_start, det_batch_end)
-        
+
         op_batches = gen_op_batches(len(op_term), op_batch_size)
         for op_batch_start, op_batch_end, _ in op_batches:
-            
-            posits_batch = op_term.posits[op_batch_start : op_batch_end]  
+            posits_batch = op_term.posits[op_batch_start:op_batch_end]
             res_enc_batch, valid = ladders_func(enc_batch, posits_batch, op_term.daggers)
-            res_enc_batch = res_enc_batch.reshape(-1, det_code_len)
-            res_enc_batch = res_enc_batch[valid]
-            res_enc = np.concatenate([res_enc, res_enc_batch])
-            
+            res_enc_batch = res_enc_batch.reshape(-1, det_code_len)[valid]
+
+            det_track_batch = None
             if det_tracking:
                 det_track_batch = np.broadcast_to(
                     det_arange_batch[:, np.newaxis],
                     shape=(len(det_arange_batch), len(posits_batch))
-                )
-                det_track_batch = det_track_batch.reshape(-1)
-                det_track_batch = det_track_batch[valid]
-                det_track = np.concatenate([det_track, det_track_batch])
+                ).reshape(-1)[valid]
 
+            res_cfs_batch = None
             if state_coeffs is not None:
                 op_cfs_batch = op_term.coeffs[op_batch_start:op_batch_end]
                 res_phs_batch = phases_func(enc_batch, basis.bitlen, posits_batch)
-                res_cfs_batch = op_cfs_batch * state_cfs_batch[:, np.newaxis]
-                res_phs_batch = res_phs_batch.reshape(-1)
-                res_cfs_batch = res_cfs_batch.reshape(-1)
-                res_phs_batch = res_phs_batch[valid]
-                res_cfs_batch = res_cfs_batch[valid]
-                res_cfs_batch = res_cfs_batch * np.array(res_phs_batch)
-                res_cfs = np.concatenate([res_cfs, res_cfs_batch])
-            
-    return res_enc, res_cfs, det_track
+                res_cfs_batch = (op_cfs_batch * state_cfs_batch[:, np.newaxis]).reshape(-1)
+                res_cfs_batch = res_cfs_batch[valid] * np.array(res_phs_batch.reshape(-1)[valid])
+
+            yield res_enc_batch, res_cfs_batch, det_track_batch

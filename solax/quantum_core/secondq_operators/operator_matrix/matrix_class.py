@@ -12,6 +12,14 @@ from ....save_load import *
 WindowCorner = tuple[Integral | None, Integral | None]
 
 
+def check_rows_cols_squeezed(basis_rows, basis_cols):
+    if not (basis_rows.is_squeezed and (basis_cols is None or basis_cols.is_squeezed)):
+        raise ValueError(
+            'Operator matrix can be built only on "squeezed" Basis objects, '\
+            'i. e. those which have unique determinants.'
+        )
+
+
 @dataclass
 class OperatorMatrix:
     _coord: np.ndarray[np.ndarray[int]]
@@ -42,11 +50,55 @@ class OperatorMatrix:
     
     @classmethod
     def zero(cls, num_rows: int, num_cols: int | None = None):
+        if num_cols is None:
+            num_cols = num_rows
         coord = np.array([], dtype=int).reshape(0, 2)
         val = np.array([], dtype=float)
-        size = np.array([num_rows, num_cols if (num_cols is not None) else num_rows])
+        size = np.array([num_rows, num_cols])
         return cls(coord, val, size)
-     
+            
+    
+    @classmethod
+    def from_opterm_or_scal(cls,
+                            term,
+                            basis_rows: Basis,
+                            basis_cols: Basis = None,
+                            *,
+                            det_batch_size: int | None,
+                            op_batch_size: int | None,
+                            multiple_devices: bool,
+                            check_squeezed: bool = True):
+        
+        if check_squeezed:
+            check_rows_cols_squeezed(basis_rows, basis_cols)
+                    
+        if basis_cols is None:
+            basis_cols = basis_rows
+
+        min_len = min(len(basis_rows), len(basis_cols))
+        if min_len == 0:
+            return cls.zero(len(basis_rows), len(basis_cols))
+            
+        kwargs = dict(
+            det_batch_size=det_batch_size,
+            op_batch_size=op_batch_size,
+            multiple_devices=multiple_devices
+        )
+        
+        if isinstance(term, Number) or (len(basis_cols) <= len(basis_rows)):
+            coord_val = eval_mat_elems(
+                term, basis_rows, basis_cols, **kwargs
+            )
+            if coord_val is None:
+                mat = cls.zero(len(basis_rows), len(basis_cols))
+            else:
+                size = np.array([len(basis_rows), len(basis_cols)])
+                mat = cls(*coord_val, size)
+        else:
+            mat = cls.from_opterm_or_scal(term.hconj, basis_cols, basis_rows,
+                                          check_squeezed=False, **kwargs).hconj
+        return mat
+    
         
     @classmethod
     def from_operator(cls,
@@ -60,12 +112,7 @@ class OperatorMatrix:
                       check_squeezed: bool = True):
         
         if check_squeezed:
-            if not (basis_rows.is_squeezed and (basis_cols is None or basis_cols.is_squeezed)):
-                 raise ValueError('Operator matrix can be built only on "squeezed" Basis objects, '\
-                                  'i. e. those which have unique determinants.')
-                    
-        if basis_cols is None:
-            basis_cols = basis_rows
+            check_rows_cols_squeezed(basis_rows, basis_cols)
             
         kwargs = dict(
             det_batch_size=det_batch_size,
@@ -73,16 +120,19 @@ class OperatorMatrix:
             multiple_devices=multiple_devices
         )
         
-        if len(basis_cols) <= len(basis_rows):
-            if len(op) > 0:
-                coord, val = eval_mat_elems(op, basis_rows, basis_cols, **kwargs)
-                size = np.array([len(basis_rows), len(basis_cols)])
-                return cls(coord, val, size)
-            else:
-                return cls.zero(len(basis_rows), len(basis_cols))
-        else:
-            return cls.from_operator(op.hconj, basis_cols, basis_rows,
-                                     check_squeezed=False, **kwargs).hconj
+        if basis_cols is None:
+            basis_cols = basis_rows
+            
+        mat = cls.zero(len(basis_rows), len(basis_cols))
+        
+        for key, term in op.items():
+            mat_term = cls.from_opterm_or_scal(
+                term, basis_rows, basis_cols,
+                check_squeezed=False, **kwargs
+            )
+            mat += mat_term
+
+        return mat
         
         
     def shrink_basis(self,

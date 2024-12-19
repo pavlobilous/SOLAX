@@ -87,7 +87,7 @@ class OperatorTerm(Sequence):
                 op_term = op_term.squeeze()
             return op_term
         else:
-            from ..operator_dict import Operator
+            from ..operator_class import Operator
             if not isinstance(other, Operator):
                 try:
                     other = Operator(other)
@@ -125,6 +125,34 @@ class OperatorTerm(Sequence):
 
     def __eq__(self, other):
         raise AttributeError('Equality == is not implemented for the OperatorTerm class.')
+        
+        
+    def _call_on_batches(self, basis, state_coeffs,
+                        det_batch_size, op_batch_size,
+                        multiple_devices: bool,
+                        det_tracking: bool):
+        
+        g = act_in_batches_generator(
+            basis, state_coeffs, self,
+            det_batch_size, op_batch_size,
+            multiple_devices,
+            det_tracking
+        )
+
+        encoding_list, coeffs_list, det_track_list = zip(*g)
+        
+        if len(encoding_list) == 0:
+            det_code_len = basis._encoding.shape[-1]
+            empty_enc = np.array([], dtype=np.uint8).reshape(0, det_code_len)
+            encoding_list.append(empty_enc)
+        if (state_coeffs is not None) and (len(coeffs_list) == 0):
+            empty_cfs =  np.array([], dtype=state_coeffs.dtype)
+            coeffs_list.append(empty_cfs)
+        if det_tracking and (len(det_track_list) == 0):
+            empty_det_track = np.array([], dtype=int)
+            det_track_list.append(empty_det_track)
+            
+        return encoding_list, coeffs_list, det_track_list
 
 
     def __call__(self,
@@ -150,17 +178,23 @@ class OperatorTerm(Sequence):
         
         if (self.posits >= basis.bitlen).any():
             raise ValueError("OperatorTerm contains positions beyond the determinant.")
+
+        if len(basis) == 0:
+            return (arg, np.array([], dtype=int)) if det_tracking else arg
         
-        encoding, coeffs, det_track = act_in_batches(
-            basis, state_coeffs, self, det_batch_size, op_batch_size,
+        encoding_list, coeffs_list, det_track_list = self._call_on_batches(
+            basis, state_coeffs, det_batch_size, op_batch_size,
             multiple_devices, det_tracking
         )
         
-        basis = Basis._from_attrs(encoding, basis.bitlen)
-        result = basis if isinstance(arg, Basis) else State(basis, coeffs)
-        
+        basis = Basis._from_attrs(
+            np.concatenate(encoding_list), basis.bitlen
+        )
+        result = basis \
+            if isinstance(arg, Basis) \
+            else State(basis, np.concatenate(coeffs_list))
         if det_tracking:
-            return result, det_track
+            return result, np.concatenate(det_track_list)
         
         if squeeze_params["SQUEEZE_DETS_AFTER_OPTERM"]:
             result = result.squeeze()
@@ -168,7 +202,7 @@ class OperatorTerm(Sequence):
     
     
     def build_matrix(self, *args, **kwargs):
-        from ..operator_dict import Operator
+        from ..operator_class import Operator
         return Operator(self).build_matrix(*args, **kwargs)
 
     

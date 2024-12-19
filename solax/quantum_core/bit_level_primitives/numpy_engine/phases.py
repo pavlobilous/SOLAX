@@ -13,10 +13,14 @@ def pos_ndisords(posits):
 
 
 def build_ladseq_pmask(ladseq_bit_posits, det_bit_len):
-    arng = np.arange(det_bit_len)
-    stack = arng > ladseq_bit_posits[..., np.newaxis]
-    pmask_bits = stack.sum(axis=-2) % 2
-    return pmask_bits
+    raise NotImplementedError(
+        'NumPy implementation of "build_ladseq_pmask" is currently not provided.'
+    )
+    ###### This is the memory-inefficient solution! ====>
+    #arng = np.arange(det_bit_len)
+    #stack = arng > ladseq_bit_posits[..., np.newaxis]
+    #pmask_bits = stack.sum(axis=-2) % 2
+    #return pmask_bits
 
 
 def ladseq_phase(det_code, det_bit_len, ladseq_bit_posits):

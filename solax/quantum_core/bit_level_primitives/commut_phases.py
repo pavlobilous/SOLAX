@@ -1,5 +1,7 @@
 import numpy as np
+import jax
 import jax.numpy as jnp
+from functools import partial
 
 from .det_encoding import *
 
@@ -15,18 +17,27 @@ def pos_ndisords(posits):
     return (posits - posits_tl < 0).sum()
 
 
-def build_ladseq_pmask(ladseq_bit_posits, det_bit_len):
+def build_ladseq_pmask(ladseq_bit_posits, det_code_len):
     """
     Returns a "phase mask" for a sequence of ladder operators.
         "Phase mask" is an array of bits 01 with 1 at bits relevant for the phase.
     Input:
         - ladseq_bit_posits: bits where the ladder operator sequence acts;
-        - det_bit_len: bit length of determinants the ladder operator sequence acts on.
-    """
-    arng = jnp.arange(det_bit_len)
-    stack = arng > ladseq_bit_posits[:, jnp.newaxis]
-    pmask_bits = stack.sum(axis=0) % 2
-    return pmask_bits
+        - det_code_len: length of the encoded determinant.
+    """    
+    @partial(jax.vmap, in_axes=(0, None))
+    def create_swapper(indx, det_code_len):
+        col, res = locate_bit(indx)
+        swp = jnp.zeros(2 * det_code_len, dtype=jnp.uint8)
+        swp = swp.at[:det_code_len].set(~0)
+        swp = jnp.roll(swp, col + 1)[:det_code_len]
+        swp = swp.at[col].set(2**res - 1)
+        return swp
+        
+    swp = create_swapper(ladseq_bit_posits, det_code_len)
+    pmask = jax.lax.reduce(swp, jnp.array(0, dtype=jnp.uint8),
+                            jnp.bitwise_xor, (0,))
+    return pmask
 
 
 def ladseq_phase(det_code, det_bit_len, ladseq_bit_posits):
@@ -38,9 +49,8 @@ def ladseq_phase(det_code, det_bit_len, ladseq_bit_posits):
         - det_bit_len: the bit length of the determinant;
         - ladseq_bit_posits: bits where the ladder operator sequence acts.
     """
-    det_bits = det_to_bits(det_code, det_bit_len, module=jnp)
-    pmask_bits = build_ladseq_pmask(ladseq_bit_posits, det_bit_len)
-    num_ones = (det_bits * pmask_bits).sum()
+    pmask = build_ladseq_pmask(ladseq_bit_posits, len(det_code))
+    num_ones = jnp.bitwise_count(det_code & pmask).sum()
     phase_01 = (num_ones + pos_ndisords(ladseq_bit_posits)) % 2    
     phase = 1 - 2 * phase_01
     return phase.astype(jnp.int8)

@@ -11,7 +11,6 @@ from ..mode_ctrl import *
 from .operator_matrix import *
 
 
-
 def get_default(op, key):
     default = OperatorTerm(key, np.array([]), np.ones(0)) if key != "scalar" else 0
     return op._d.get(key, default)
@@ -77,11 +76,14 @@ class Operator(Mapping):
                 
                 
     def __repr__(self):
-        d_repr = ",\n".join(
-            f"{str(k)}: {repr(v)}" for k, v in self._d.items()
-        )
-        d_repr = ("\n" + d_repr).replace("\n", "\n\t")
-        return f"Operator({{{d_repr}\n}})"
+        if self:
+            d_repr = ",\n".join(
+                f"{str(k)}: {repr(v)}" for k, v in self._d.items()
+            )
+            d_repr = ("\n" + d_repr).replace("\n", "\n\t") + "\n"
+        else:
+            d_repr = ""
+        return f"Operator({{{d_repr}}})"
                 
                 
     def __len__(self):
@@ -221,13 +223,13 @@ class Operator(Mapping):
                      op_batch_size: int | None = None,
                      multiple_devices: bool = False
                     ) -> OperatorMatrix:
-        m = OperatorMatrix.from_operator(
+        mat = OperatorMatrix.from_operator(
             self, basis_rows, basis_cols,
             det_batch_size=det_batch_size,
             op_batch_size=op_batch_size,
             multiple_devices=multiple_devices
         )
-        return m
+        return mat
     
     
     def __pre_dictify__(self):
