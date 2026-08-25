@@ -9,7 +9,7 @@ own section structure:
     2. solax.save_load.dictification: dictify / undictify -- translating
        (registered) Python/dataclass objects to/from plain dicts.
     3. solax.save_load (save / load) -- the user-facing save/load API that
-       combines the two layers above and is used for real SOLAX objects
+       combines the two layers above and is used for real solax objects
        (Basis, Operator, RandomKeys, ...).
 
 Notebook `help(...)` cells and shell-magic `!ls` / `rm -r` cells are dropped
@@ -354,7 +354,7 @@ def test_pre_dictify_and_post_undictify_round_trip_tuple_keys(clean_registry):
 
 
 # ---------------------------------------------------------------------------
-# 3. Saving / loading nested (SOLAX) classes in dicts
+# 3. Saving / loading nested (solax) classes in dicts
 # ---------------------------------------------------------------------------
 
 def _example_basis():
@@ -519,7 +519,7 @@ def test_save_load_deeply_nested_dict_with_random_keys(tmp_path):
 # --- error paths of save() -------------------------------------------------
 
 def test_save_rejects_solax_object_nested_in_a_plain_list(tmp_path):
-    """Each SOLAX object to be saved must have an associated dict key --
+    """Each solax object to be saved must have an associated dict key --
     burying it inside a plain list under a key is not supported.
     """
     basis = _example_basis()
@@ -539,7 +539,7 @@ def test_save_rejects_bare_non_dict_non_solax_value(tmp_path):
 
 def test_save_rejects_unregistered_class_instance(clean_registry, tmp_path):
     """my_obj1 here is a plain (unregistered) object -- solax's save() can
-    only handle registered SOLAX classes or dicts.
+    only handle registered solax classes or dicts.
     """
     path = str(tmp_path / "saved_bad3")
 

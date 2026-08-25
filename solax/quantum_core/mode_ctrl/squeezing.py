@@ -25,7 +25,7 @@ def manual_squeezing():
     application, restoring the previous squeeze_params on exit. Used
     internally wherever an intermediate result must be built without
     eagerly deduplicating it (e.g. while assembling a larger result in
-    stages); "squeeze"/deduplication is SOLAX's own internal naming,
+    stages); "squeeze"/deduplication is solax's own internal naming,
     not paper terminology. Use squeeze()/is_squeezed on the individual
     classes to deduplicate/check explicitly regardless of these
     settings.

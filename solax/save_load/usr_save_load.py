@@ -1,13 +1,13 @@
 """
-The user-facing entry point of SOLAX's save/load subsystem:
+The user-facing entry point of solax's save/load subsystem:
 "save"/"load" combine dictification (solax.save_load.dictification --
-turning registered SOLAX objects into plain nested dicts) with
+turning registered solax objects into plain nested dicts) with
 solax.save_load.json_for_dicts (turning those dicts, and any NumPy
 arrays nested inside them, into files on disk and back).
 
 "pickle" is deliberately not used anywhere in this subsystem: as the
-SOLAX paper notes, it has been shown to have safety flaws (unpickling
-untrusted data can execute arbitrary code), so SOLAX instead uses the
+solax paper notes, it has been shown to have safety flaws (unpickling
+untrusted data can execute arbitrary code), so solax instead uses the
 standard "json" module for plain values plus NumPy's own array
 (de)serialization for arrays, with classes opting in via an explicit
 registry (see solax.save_load.registration).
@@ -25,8 +25,8 @@ def save(arg: SolaxClass | dict, path: str):
     This function is a tool for saving all necessary data at once.
 
     It can save:
-        -> a standalone SOLAX object
-        -> a nested dictionary with SOLAX objects and NumPy arrays inside.
+        -> a standalone solax object
+        -> a nested dictionary with solax objects and NumPy arrays inside.
 
     Warning:
         "path" is treated as a directory: it is created, and -- if it
@@ -36,7 +36,7 @@ def save(arg: SolaxClass | dict, path: str):
         discard it.
 
     Note:
-        Since SOLAX uses dictionary keys as parts of saving paths,
+        Since solax uses dictionary keys as parts of saving paths,
         all keys in the saved dictionary must be:
 
             (1) of string type;
@@ -51,7 +51,7 @@ def save(arg: SolaxClass | dict, path: str):
 
     Raises:
         TypeError: if "arg" cannot be dictified -- e.g. it is a bare
-            value that is neither a registered SOLAX object nor a dict
+            value that is neither a registered solax object nor a dict
             (a standalone NumPy array included), it contains an instance
             of an unregistered class, or one of its dict keys (own or
             nested) is not a string. All such failures from dictify()
@@ -79,6 +79,6 @@ def load(path: str) -> SolaxClass | dict:
 
     Reads back the on-disk structure written by save() (a "schema.json"
     plus any ".npy" array files under "path") and undictifies it into
-    the original SOLAX object or nested dict.
+    the original solax object or nested dict.
     """
     return undictify(load_dict_with_nd(path))

@@ -1,7 +1,7 @@
 """
-Translation of registered SOLAX objects (and plain nested dicts mixing
+Translation of registered solax objects (and plain nested dicts mixing
 them with NumPy arrays and standard Python types) to/from plain nested
-Python dicts -- the layer between SOLAX's own classes and the
+Python dicts -- the layer between solax's own classes and the
 JSON/NumPy-based (de)serialization in solax.save_load.json_for_dicts.
 
 "dictify"/"undictify" only ever produce/consume plain dicts (and the
@@ -17,7 +17,7 @@ def assert_valid_key(k):
     """
     Checks that "k" is usable as a dict key in a dictified structure.
 
-    SOLAX uses dict keys both for JSON encoding and (when a NumPy array
+    solax uses dict keys both for JSON encoding and (when a NumPy array
     is found under that key) as part of the on-disk saving path, so a
     key must be a string that is also a valid Python identifier (i. e.
     it could be used as a Python variable name).

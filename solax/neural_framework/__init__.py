@@ -1,7 +1,7 @@
 """
 neural_framework: a small, generic FLAX/JAX-based training layer used
-internally by SOLAX to build and train neural networks (see SciPost
-Phys. Codebases 51). It is not exposed at the general SOLAX interface
+internally by solax to build and train neural networks (see SciPost
+Phys. Codebases 51). It is not exposed at the general solax interface
 level; instead it supplies the machinery -- a model wrapper with
 JIT-compiled train/predict/validate steps, batching, metrics
 monitoring with optional early stopping, and Orbax-based checkpointing

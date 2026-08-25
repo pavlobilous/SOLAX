@@ -58,7 +58,7 @@ line-length = 100
 # sorting, str.split() vs list literals, etc.) that would otherwise
 # produce a large, low-value diff across the whole package. Also
 # deliberately excludes F403/F405/F821 (wildcard-import name
-# detection): SOLAX uses `from .x import *` pervasively as its own
+# detection): solax uses `from .x import *` pervasively as its own
 # internal coding style throughout the package, not just for
 # __init__.py re-exports, so those checks would be nothing but noise
 # here rather than real findings.
@@ -71,7 +71,7 @@ select = [
 ]
 ignore = [
     "E731",  # lambda-assignment: pure style, no correctness difference;
-             # SOLAX uses named lambdas as private helpers throughout
+             # solax uses named lambdas as private helpers throughout
              # (e.g. get_data/get_bitlen in basis_class.py/state_class.py)
     "B905",  # zip-without-strict: verified a real false positive on
              # this codebase (printing.py's dets_with_coeffs_to_strs
@@ -82,12 +82,12 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 # __init__.py files across the package exist specifically to re-export
-# names from their submodules (SOLAX's own module-organization
+# names from their submodules (solax's own module-organization
 # convention, e.g. `from .operator_class import Operator`); pyflakes
 # has no way to know that "unused" import is the intended public API.
 "**/__init__.py" = ["F401"]
 # These tests deliberately write a bare "x == y" expression inside
-# pytest.raises(AttributeError) to exercise SOLAX classes' intentional
+# pytest.raises(AttributeError) to exercise solax classes' intentional
 # equality-is-unsupported contract; bugbear can't tell that from an
 # accidental no-op comparison.
 "tests/*" = ["B015"]

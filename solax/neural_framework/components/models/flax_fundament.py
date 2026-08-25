@@ -13,7 +13,7 @@ class Module(nn.Module):
     """
     Flax linen.Module wrapping a user-supplied, per-entry architecture
     function "call_on_entry(nn_inp) -> nn_out" (raw logits for a
-    classifier, per SciPost Phys. Codebases 51 -- SOLAX applies
+    classifier, per SciPost Phys. Codebases 51 -- solax applies
     softmax itself, so "call_on_entry" should not). Calling the module
     on a batch vmaps "call_on_entry" over the batch dimension, so
     "call_on_entry" only ever needs to handle a single, non-vectorized

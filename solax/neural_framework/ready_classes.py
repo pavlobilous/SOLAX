@@ -3,7 +3,7 @@ Ready-made NeuralModel/MetricsMonitor subclasses exposed as the two
 built-in loss/metric configurations described in SciPost Phys.
 Codebases 51: a least-squares regressor and a softmax classifier, each
 paired with a matching metrics monitor (loss and accuracy,
-respectively). These are the classes SOLAX's BasisClassifier and
+respectively). These are the classes solax's BasisClassifier and
 similar user-facing wrappers are actually built on.
 """
 import jax.numpy as jnp
@@ -38,7 +38,7 @@ class SoftmaxClassifier(NeuralModel):
     (optax.softmax_cross_entropy_with_integer_labels), and the output
     post-transform is argmax (so calling the model returns predicted
     class indices, not raw logits/probabilities). "call_on_entry"
-    should output raw logits -- SOLAX applies softmax internally, so
+    should output raw logits -- solax applies softmax internally, so
     there is no need to apply it within the architecture function
     itself (SciPost Phys. Codebases 51).
     """

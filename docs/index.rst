@@ -16,10 +16,6 @@ Installation
 
    pip install git+https://github.com/pavlo-bilous/quantumsolax.git
 
-(The distribution name is ``quantumsolax`` -- the plain name ``solax`` is
-already taken on PyPI by an unrelated package -- but the import name is
-unchanged: ``import solax as sx``.)
-
 Quick start
 -----------
 

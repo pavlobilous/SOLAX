@@ -4,8 +4,8 @@ arrays anywhere inside it, to/from a directory on disk: plain values
 are JSON-encoded into a single "schema.json", while each NumPy array is
 written to its own ".npy" file at a path mirroring the array's key
 hierarchy in the dict (e.g. dict_with_nd["a"]["b"] -> "<root>/a/b.npy").
-This module has no notion of SOLAX classes -- see
-solax.save_load.dictification for turning registered SOLAX objects into
+This module has no notion of solax classes -- see
+solax.save_load.dictification for turning registered solax objects into
 plain nested dicts first.
 """
 import json

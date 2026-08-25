@@ -1,5 +1,5 @@
 """
-quantum_core: the core quantum-mechanical data model of SOLAX --
+quantum_core: the core quantum-mechanical data model of solax --
 Slater-determinant bases and states (det_based_classes), second-
 quantized operators and their sparse matrix representation
 (secondq_operators), and shared global switches for auto-deduplication

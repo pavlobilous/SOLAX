@@ -12,8 +12,6 @@ See the paper for the full design and physics background: [SciPost Phys. Codebas
 pip install git+https://github.com/pavlo-bilous/quantumsolax.git
 ```
 
-(The distribution name is `quantumsolax` — the plain name `solax` is already taken on PyPI by an unrelated package — but the import name is unchanged: `import solax as sx`.)
-
 Requires Python >=3.10. For development (running the test suite, linting):
 
 ```bash
