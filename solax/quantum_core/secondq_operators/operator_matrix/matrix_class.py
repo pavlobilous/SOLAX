@@ -1,3 +1,7 @@
+"""
+OperatorMatrix: a sparse (COO-style) matrix representation of an
+Operator/OperatorTerm in a given basis (or pair of row/column bases).
+"""
 import numpy as np
 import scipy as sp
 from dataclasses import dataclass
@@ -13,6 +17,9 @@ WindowCorner = tuple[Integral | None, Integral | None]
 
 
 def check_rows_cols_squeezed(basis_rows, basis_cols):
+    """Raises ValueError unless both bases (or just "basis_rows" if
+    "basis_cols" is None) are squeezed -- a matrix's rows/columns must
+    correspond to unique determinants."""
     if not (basis_rows.is_squeezed and (basis_cols is None or basis_cols.is_squeezed)):
         raise ValueError(
             'Operator matrix can be built only on "squeezed" Basis objects, '\
@@ -22,25 +29,46 @@ def check_rows_cols_squeezed(basis_rows, basis_cols):
 
 @dataclass
 class OperatorMatrix:
+    """
+    A sparse (COO-style) matrix: "_coord" is an (N, 2) array of
+    (row, col) index pairs, "_val" an (N,) array of the corresponding
+    values, and "_size" the (num_rows, num_cols) shape -- see
+    build_matrix() on Operator/OperatorTerm for how one is normally
+    constructed, rather than instantiating this class directly.
+
+    Supports scalar arithmetic (+, -, *, /, unary -) with other
+    OperatorMatrix instances/numbers, hconj, and the basis-relative
+    reshaping operations displace()/window()/shrink_basis() (see each
+    for how they differ). Equality ("==") is deliberately unsupported
+    (raises AttributeError), for the same reason as for the other
+    quantum_core classes. Use to_scipy() to get a real
+    scipy.sparse.coo_array for further numerical work (diagonalization,
+    etc.).
+    """
     _coord: np.ndarray[np.ndarray[int]]
     _val: np.ndarray[float | complex]
     _size: np.ndarray[int]
-    
-    
+
+
     __array_ufunc__ = None
-    
-    
+
+
     @property
     def size(self):
+        """The (num_rows, num_cols) shape, as a plain tuple."""
         return tuple(self._size)
-    
-    
+
+
     @property
     def num_nonzero(self):
+        """Number of stored (nonzero) entries."""
         return len(self._val)
-    
-    
+
+
     def __str__(self):
+        """Like repr(), but with the leading underscores stripped from
+        the "_coord"/"_val"/"_size" field names for a more readable
+        rendering."""
         s = repr(self)
         s = s.replace("_coord", "coord")
         s = s.replace("_val", "val")
@@ -50,6 +78,8 @@ class OperatorMatrix:
     
     @classmethod
     def zero(cls, num_rows: int, num_cols: int | None = None):
+        """An all-zero (num_rows, num_cols) matrix (no stored entries).
+        "num_cols" defaults to "num_rows" (a square matrix)."""
         if num_cols is None:
             num_cols = num_rows
         coord = np.array([], dtype=int).reshape(0, 2)
@@ -68,10 +98,19 @@ class OperatorMatrix:
                             op_batch_size: int | None,
                             multiple_devices: bool,
                             check_squeezed: bool = True):
-        
+        """
+        Builds the matrix of a single OperatorTerm (or a plain scalar,
+        treated as a multiple of the identity) in "basis_rows" x
+        "basis_cols" (defaulting "basis_cols" to "basis_rows"). Both
+        bases must be squeezed. For efficiency, computes matrix
+        elements in whichever of the two bases is smaller and takes
+        hconj if that was "basis_cols" rather than "basis_rows"; pass
+        check_squeezed=False internally to skip a redundant recheck
+        during that recursive hconj step.
+        """
         if check_squeezed:
             check_rows_cols_squeezed(basis_rows, basis_cols)
-                    
+
         if basis_cols is None:
             basis_cols = basis_rows
 
@@ -110,10 +149,12 @@ class OperatorMatrix:
                       op_batch_size: int | None,
                       multiple_devices: bool,
                       check_squeezed: bool = True):
-        
+        """Builds the matrix of a full Operator by summing
+        from_opterm_or_scal() over each of its terms (see that method
+        for the argument semantics)."""
         if check_squeezed:
             check_rows_cols_squeezed(basis_rows, basis_cols)
-            
+
         kwargs = dict(
             det_batch_size=det_batch_size,
             op_batch_size=op_batch_size,
@@ -152,6 +193,10 @@ class OperatorMatrix:
         
             
     def __add__(self, other):
+        """Adds two matrices entry-wise (values at shared coordinates
+        summed), with the result "size" the element-wise max of both
+        operands' sizes -- so operands of different sizes may be added,
+        the smaller effectively zero-padded."""
         if not isinstance(other, OperatorMatrix):
             return NotImplemented
         coord = np.concatenate([self._coord, other._coord])
@@ -159,9 +204,10 @@ class OperatorMatrix:
         coord, val = squeeze_array(coord, val)
         size = np.vstack([self._size, other._size]).max(axis=0)
         return OperatorMatrix(coord, val, size)
-    
-    
+
+
     def __mul__(self, scalar: Number):
+        """Scales all stored values by "scalar"."""
         if not isinstance(scalar, Number):
             return NotImplemented
         return OperatorMatrix(self._coord, self._val * scalar, self._size)
@@ -174,16 +220,24 @@ class OperatorMatrix:
     
     @property
     def hconj(self):
+        """Hermitian conjugate: swaps (row, col) to (col, row) for
+        every stored entry, conjugates the values, and swaps the
+        (rows, cols) size to (cols, rows)."""
         coord = self._coord[:, ::-1]
         val = self._val.conj()
         size = self._size[::-1]
         return OperatorMatrix(coord, val, size)
-    
-    
+
+
     def displace(self, row_shift: Integral, col_shift: Integral):
+        """Returns a new matrix with every entry's coordinates shifted
+        by (row_shift, col_shift) and the size grown/shrunk to match;
+        entries whose shifted coordinates would go negative are
+        dropped, and the size is clamped to (0, 0) rather than going
+        negative. "row_shift"/"col_shift" must both be integers."""
         if not isinstance(row_shift, Integral) or not isinstance(col_shift, Integral):
-            raise TypeError("Wrong argument passed. Row and column shift must be both integer.")    
-        shift = np.array([row_shift, col_shift])     
+            raise TypeError("Wrong argument passed. Row and column shift must be both integer.")
+        shift = np.array([row_shift, col_shift])
         coord = self._coord + shift
         where_nonneg = (coord >= 0).all(axis=1)
         coord = coord[where_nonneg]
@@ -195,7 +249,14 @@ class OperatorMatrix:
     
     
     def window(self, left_top_incl: WindowCorner, right_bottom_excl: WindowCorner):
-        
+        """
+        Returns a new matrix of the SAME size as self, with entries
+        outside the [left_top_incl, right_bottom_excl) coordinate
+        window dropped (zeroed) rather than the matrix being resized --
+        contrast with shrink_basis(), which extracts an actually
+        smaller sub-matrix. Each corner is a (row, col) pair of ints or
+        None (None means unbounded on that side/that end).
+        """
         check_int_or_none = lambda v: isinstance(v, Integral) or (v is None)
         check_max_limit_point = lambda p: len(p) == 2 and check_int_or_none(p[0]) and check_int_or_none(p[1])
         
@@ -216,6 +277,8 @@ class OperatorMatrix:
     
     
     def __eq__(self, other):
+        """Always raises AttributeError: equality is deliberately
+        unsupported for OperatorMatrix (see the class docstring)."""
         raise AttributeError('Equality == is not implemented for the OperatorMatrix class.')
     
     
@@ -230,6 +293,9 @@ class OperatorMatrix:
     
     
     def to_scipy(self):
+        """Converts to a real scipy.sparse.coo_array of the same shape
+        and entries, for use with scipy's sparse linear algebra (e.g.
+        scipy.sparse.linalg.eigsh)."""
         mat_scipy = sp.sparse.coo_array(
             (self._val, (self._coord[:, 0], self._coord[:, 1])),
             shape=self._size

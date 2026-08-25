@@ -1,3 +1,8 @@
+"""
+Turns a function that processes one batch into a generator function
+that iterates over batches of arbitrary-length array-like arguments,
+optionally shuffling and/or spreading batches across multiple devices.
+"""
 import numpy as np
 import jax
 from jax.typing import ArrayLike
@@ -12,28 +17,38 @@ from .index_shuffle import *
 from ....utils.multi_batching import *
 
 
-CallableWithIndex = Callable[[int, ...], ...]        
-        
+CallableWithIndex = Callable[[int, ...], ...]
+
 
 @dataclass
 class Inds:
+    """
+    Lazily-shuffled index sequence used internally by batchify() to
+    select each batch's rows. If "key" is given (not None), indexing
+    goes through a precomputed shuffled permutation of range(length)
+    (see shuffled_inds()); if "key" is None, indexing is the identity
+    (i.e. no shuffling), so Inds[s] == s.
+    """
     _: KW_ONLY
     key: ArrayLike = None
     length: bool
-    
+
     def __post_init__(self):
+        """Precomputes the shuffled permutation if "key" is not None."""
         if self.key is not None:
             self.shuffled_inds = shuffled_inds(self.key, length=self.length)
-    
+
     def __len__(self):
+        """Returns "length" (the size of the index range)."""
         return self.length
-    
+
     def __getitem__(self, s):
+        """Returns the (possibly shuffled) indices at "s"."""
         if self.key is not None:
             return self.shuffled_inds[s]
         else:
             return s
-    
+
 
 def batchify(*,
              batch_sz: int | None,
@@ -88,12 +103,18 @@ def batchify(*,
 
 def exhaust_batches(batchified_func: Callable):
     """
-    Automatically exhaust generators created by "batchified_func" without memory overhead.
+    Decorator that wraps a batchify()-decorated (generator-returning)
+    function so that calling it immediately drives the generator to
+    completion -- e.g. running all its side effects (such as a
+    training step per batch) -- and returns None, instead of handing
+    back a lazy generator the caller would have to iterate manually.
+    Uses a zero-length deque to consume the generator without
+    retaining its yielded values in memory.
     """
-    
+
     @wraps(batchified_func)
     def exh_func(*args, **kwargs):
         gen = batchified_func(*args, **kwargs)
         deque(gen, maxlen=0)
-        
+
     return exh_func

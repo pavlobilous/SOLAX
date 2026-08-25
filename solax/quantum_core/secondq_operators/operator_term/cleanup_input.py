@@ -1,3 +1,6 @@
+"""
+Validation and normalization of OperatorTerm's constructor arguments.
+"""
 import numpy as np
 
 what_is_posits = '"posits" must be a 2D NumPy array of integers indicating '\
@@ -9,6 +12,27 @@ what_is_coeffs = '"coeffs" must be a 1D NumPy numeric array indicating '\
                             'ladder operator product.'
 
 def cleanup_input(daggers, posits, coeffs):
+    """
+    Validates and normalizes the ("daggers", "posits", "coeffs")
+    arguments of OperatorTerm.__init__/__post_init__.
+    Input:
+        - "daggers": any iterable of 0/1, coerced to a tuple; must be
+            non-empty and contain only 0s and 1s.
+        - "posits": a 2D NumPy integer array, one row of spin-orbital
+            positions per ladder-operator product, its width matching
+            len(daggers); must contain only non-negative integers. A
+            width-0 array (no rows worth of positions, i.e. an empty
+            second axis) is reshaped to (0, len(daggers)) so an empty
+            OperatorTerm can still be built.
+        - "coeffs": a 1D NumPy numeric array of per-row coefficients
+            (or a scalar/0D array, promoted to 1D via
+            np.atleast_1d), one entry per row of "posits".
+    Raises TypeError/ValueError with a descriptive message if any of
+    the above is violated, including length mismatches between
+    "daggers"/"posits" or "posits"/"coeffs".
+    Output:
+        The normalized (daggers, posits, coeffs) tuple.
+    """
     daggers = tuple(daggers)
     if not daggers:
         raise ValueError('"daggers" must have positive length.')

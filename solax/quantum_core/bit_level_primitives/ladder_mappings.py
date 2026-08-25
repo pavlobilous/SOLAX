@@ -1,3 +1,8 @@
+"""
+ladder_mappings: applying a single ladder operator, or a sequence of
+them, to an encoded determinant -- flipping the relevant bits and
+flagging results annihilated by the Pauli exclusion principle.
+"""
 import jax
 import jax.numpy as jnp
 

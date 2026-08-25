@@ -1,3 +1,12 @@
+"""
+The generic, task-agnostic training loop driving a NeuralModel over a
+full (already train/validation-split) dataset: batched gradient
+updates per epoch, optional periodic training-metrics reporting,
+optional per-epoch validation with early stopping, and printed
+progress (per SciPost Phys. Codebases 51's description of the
+training procedure: batches, epochs, a held-out validation split,
+accuracy/loss printed per epoch).
+"""
 import jax
 from collections.abc import Sequence
 
@@ -19,7 +28,59 @@ def train_on_data(key,
                   val_at_start: bool = False,
                   printout_vals: bool = True
         ):
-    
+    """
+    Trains "model" on "train_data" for up to "epochs" epochs, with
+    optional per-batch/per-epoch metrics tracking and early stopping.
+    Input:
+        - "key": jax.random key; split as needed to shuffle each
+            epoch's training batches and each validation pass.
+        - "model": the NeuralModel to train (mutated in place via its
+            own train() calls).
+        - "train_data": (features, labels) pair for training, batched
+            per "batch_size" and reshuffled every epoch.
+        - "val_data" (default=None): (features, labels) pair for
+            validation; required whenever "val_metrics" is given (see
+            Note below).
+        - "batch_size" (default=None): batch size for both training
+            and validation batching; None means a single batch.
+        - "epochs" (default=1): number of passes over "train_data".
+        - "train_metrics" (default=None): optional MetricsMonitor
+            evaluated (and updated, and reported) on training batches
+            every "train_metr_freq" batches; if None, no training
+            metrics are evaluated during the loop.
+        - "val_metrics" (default=None): optional MetricsMonitor
+            evaluated over all of "val_data" (averaged into one
+            per-epoch entry, see the "averaging" context manager)
+            after every epoch, and once more before the first epoch if
+            "val_at_start" is True. Also consulted for early stopping
+            at the end of every epoch (see Note below).
+        - "train_metr_freq" (default=10): evaluate/report
+            "train_metrics" every this many training batches (batch 0
+            included).
+        - "val_at_start" (default=False): if True (and "val_metrics"
+            is given), run one extra validation pass before the first
+            training epoch, to record/report the untrained model's
+            baseline metrics.
+        - "printout_vals" (default=True): if True, metrics updates
+            (training and validation) are printed to stdout as they
+            happen; if False, they are computed/tracked silently.
+    Output:
+        A bool: True if training stopped early because
+        "val_metrics.early_stopping" signalled to stop (see
+        EarlyStoppingGuard) before all "epochs" completed; False if
+        all "epochs" ran to completion.
+    Note: at the end of every epoch this function unconditionally
+    checks "val_metrics.early_stopping", even when "val_metrics" was
+    not evaluated that epoch (i.e. even when "val_metrics" is falsy).
+    In particular, calling this with "val_metrics=None" raises
+    AttributeError there ("NoneType" has no attribute
+    "early_stopping") rather than simply skipping early-stopping
+    checks -- this looks like a latent bug. In the codebase's only
+    caller (BigBasisManager.train_classifier), "val_metrics" is always
+    a MetricsMonitor (a default AccuracyMonitor is constructed if the
+    caller doesn't supply one), so this path is not currently
+    exercised.
+    """
     @exhaust_batches
     @batchify(batch_sz=batch_size, shuffle=True)
     def train(i, features, labels):

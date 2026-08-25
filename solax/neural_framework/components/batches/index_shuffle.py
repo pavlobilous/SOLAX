@@ -1,3 +1,11 @@
+"""
+Random shuffling of index sequences, including sequences longer than
+jax.random.permutation can handle directly: shuffled_inds() splits a
+"length"-long range into chunks of at most "max_ind" indices, shuffles
+each chunk independently (jax.random.permutation is used per chunk),
+and then reassembles/re-shuffles across chunk boundaries so the result
+is a uniformly shuffled permutation of range(length) as a whole.
+"""
 from dataclasses import dataclass, KW_ONLY
 
 import numpy as np
@@ -6,12 +14,33 @@ import jax.numpy as jnp
 
 
 def chunk_params(length, max_ind):
+    """
+    Splits a range of size "length" into chunks of at most "max_ind"
+    indices each. Returns (chunks_num, last_chunk_sz): the number of
+    chunks and the size of the last (possibly shorter) chunk; all
+    other chunks have size "max_ind".
+    """
     chunks_num = -(length // -max_ind)
     last_chunk_sz = length - (chunks_num - 1) * max_ind
     return chunks_num, last_chunk_sz
 
 
 def shuffled_chunks(key, chunks_num, last_chunk_sz):
+    """
+    Builds "chunks_num" independently-shuffled index chunks (each a
+    permutation of range(chunk size), as a NumPy array), splitting
+    "key" via jax.random.split for each chunk. All chunks except the
+    last have "last_chunk_sz"-independent full size and the last one
+    has size "last_chunk_sz".
+
+    Note: this function reads a module-level name "max_ind" for the
+    full chunk size that is never assigned anywhere in this module
+    (it is only ever a local variable inside shuffled_inds(), not a
+    global); as written, calling this with "chunks_num" > 1 raises
+    NameError. In practice this path is never hit because
+    shuffled_inds() is always called with its default "max_ind"
+    (about 2^31), so "chunks_num" is 1 for any realistic "length".
+    """
     sh_chunks = []
     for chunk in range(chunks_num):
         chunk_sz = max_ind \
@@ -27,6 +56,12 @@ def shuffled_chunks(key, chunks_num, last_chunk_sz):
 
 
 def vertical_shuffle(key, arr):
+    """
+    Independently shuffles each column of the 2D array "arr" along
+    axis 0 (rows), using "key". Used by shuffled_inds() to re-shuffle
+    index chunks across chunk boundaries once they've been stacked
+    into a 2D array.
+    """
     inds = jax.random.permutation(key,
             jnp.tile(jnp.arange(arr.shape[0]), (arr.shape[1], 1)).T,
             axis=0,
@@ -36,7 +71,24 @@ def vertical_shuffle(key, arr):
 
 
 def shuffled_inds(key, *, length: int, max_ind: int = None):
-    
+    """
+    Returns a uniformly-shuffled permutation of range("length") as a
+    NumPy 1D array of indices, using "key" for randomness.
+    Input:
+        - "key": a jax.random key.
+        - "length": size of the index range to shuffle. Raises
+            ValueError if 0/None (falsy).
+        - "max_ind" (default=None): largest chunk size
+            jax.random.permutation is asked to shuffle at once (see
+            chunk_params()); if 0/None (falsy), defaults to the max
+            value of jnp's default int dtype (about 2^31), which for
+            any realistic "length" keeps everything in a single chunk
+            and avoids the chunking path (see the note on
+            shuffled_chunks() about the multi-chunk path).
+    Output:
+        A NumPy 1D array of "length" indices, a permutation of
+        range("length").
+    """
     if not length:
         raise ValueError("Nothing to shuffle.")
     

@@ -1,3 +1,7 @@
+"""
+commut_phases: computing the fermionic anticommutation sign phase (+-1)
+picked up when a sequence of ladder operators acts on a determinant.
+"""
 import numpy as np
 import jax
 import jax.numpy as jnp

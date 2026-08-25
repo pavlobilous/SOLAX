@@ -1,3 +1,8 @@
+"""
+arr_op_wraps: shared plumbing for lifting a data-level binary operation
+to the level of a SOLAX class (Basis/State), handling the "bitlen == 0"
+special case uniformly.
+"""
 from collections.abc import Callable
 from typing import TypeVar
 

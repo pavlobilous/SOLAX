@@ -1,3 +1,8 @@
+"""
+det_encoding: packing/unpacking a Slater determinant's occupation-number
+01 bitstring to/from a compact byte encoding, and locating/extracting
+individual bits within that encoding.
+"""
 import jax.numpy as jnp
 import numpy as np
 
