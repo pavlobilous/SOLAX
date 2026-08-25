@@ -82,7 +82,7 @@ def dictify(arg):
             return {".class_with_own_svld": label}
         if hasattr(arg, "__pre_dictify__"):
             arg = arg.__pre_dictify__()
-        arg_atts = dictify(getattr(arg, "__dict__"))
+        arg_atts = dictify(arg.__dict__)
     
     if arg_is_dict:
         arg_dict = {}

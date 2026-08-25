@@ -166,7 +166,7 @@ class OperatorMatrix:
             
         mat = cls.zero(len(basis_rows), len(basis_cols))
         
-        for key, term in op.items():
+        for _key, term in op.items():
             mat_term = cls.from_opterm_or_scal(
                 term, basis_rows, basis_cols,
                 check_squeezed=False, **kwargs

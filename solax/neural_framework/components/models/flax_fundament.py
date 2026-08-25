@@ -5,7 +5,6 @@ initializes it into a Flax TrainState.
 """
 from collections.abc import Callable
 import jax
-import jax.numpy as jnp
 from flax import linen as nn
 from flax.training.train_state import TrainState
 

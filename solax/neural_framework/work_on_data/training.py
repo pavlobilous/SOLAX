@@ -94,7 +94,7 @@ def train_on_data(key,
                 key, subkey = jax.random.split(key)
                 validate(subkey, *val_data)
     
-    with val_rep(f"Epoch"), train_rep():
+    with val_rep("Epoch"), train_rep():
         for ep in range(epochs):
             key, subkey = jax.random.split(key)
             train(subkey, *train_data)

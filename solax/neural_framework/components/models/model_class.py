@@ -128,7 +128,7 @@ class NeuralModel:
         model has not been initialize()d yet.
         """
         if not os.path.exists(fld):
-            raise FileNotFoundError(f"Cannot load from here. Path does not exist.")
+            raise FileNotFoundError("Cannot load from here. Path does not exist.")
         if self._flax_state is not None:
             self._flax_state = load_flax_state(fld, self._flax_state)
         else:

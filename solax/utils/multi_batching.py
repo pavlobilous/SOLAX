@@ -25,7 +25,7 @@ def gen_pack_edges(data_len, batch_size, n_devices):
     pack_size = batch_size * n_devices
     n_packs = data_len // pack_size
     pack_start = 0
-    for i in range(n_packs):
+    for _i in range(n_packs):
         pack_end = pack_start + pack_size
         yield pack_start, pack_end, n_devices
         pack_start = pack_end

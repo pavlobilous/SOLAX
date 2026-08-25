@@ -78,7 +78,7 @@ class SaveLoadRegistry:
         try:
             del self.registry[label]
         except KeyError:
-            raise KeyError(f"The label {label} not found in the registry.")
+            raise KeyError(f"The label {label} not found in the registry.") from None
 
 
     def list_registered(self, ):
@@ -96,7 +96,7 @@ class SaveLoadRegistry:
         try:
             return self.registry[label][1]
         except KeyError:
-            raise KeyError(f"Label {label} not found in the registry.")
+            raise KeyError(f"Label {label} not found in the registry.") from None
 
 
     def retreive_cls(self, label: str) -> Any:
@@ -107,7 +107,7 @@ class SaveLoadRegistry:
         try:
             return self.registry[label][0]
         except KeyError:
-            raise KeyError(f"Label {label} not found in the registry.")
+            raise KeyError(f"Label {label} not found in the registry.") from None
 
 
     def retreive_label(self, cls: Any) -> str:

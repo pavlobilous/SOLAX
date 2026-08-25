@@ -3,7 +3,6 @@ Turns a function that processes one batch into a generator function
 that iterates over batches of arbitrary-length array-like arguments,
 optionally shuffling and/or spreading batches across multiple devices.
 """
-import numpy as np
 import jax
 from jax.typing import ArrayLike
 
@@ -80,7 +79,7 @@ def batchify(*,
             try:
                 arr_sz = len(args_to_batch[0])
             except IndexError:
-                raise ValueError("No arguments to batch along.")
+                raise ValueError("No arguments to batch along.") from None
             b_sz = batch_sz or arr_sz
             
             inds = Inds(key=(key if shuffle else None), length=arr_sz)

@@ -12,7 +12,8 @@ import json
 from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
-import os, shutil
+import os
+import shutil
 
 
 @dataclass

@@ -88,7 +88,7 @@ class BigBasisManager:
                          batch_size: int,
                          epochs: int,
                          early_stop: bool,
-                         early_stop_params: dict = {},
+                         early_stop_params: dict = None,
                          **train_kwargs
                         ):
         """
@@ -126,6 +126,7 @@ class BigBasisManager:
             | dict(batch_size=batch_size, epochs=epochs)
             | train_kwargs
         )
+        early_stop_params = early_stop_params or {}
         
         impt01 = (np.abs(train_state.coeffs) >= abs_coeff_cut).astype(np.int8)
         

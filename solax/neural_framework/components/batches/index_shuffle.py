@@ -6,8 +6,6 @@ each chunk independently (jax.random.permutation is used per chunk),
 and then reassembles/re-shuffles across chunk boundaries so the result
 is a uniformly shuffled permutation of range(length) as a whole.
 """
-from dataclasses import dataclass, KW_ONLY
-
 import numpy as np
 import jax
 import jax.numpy as jnp

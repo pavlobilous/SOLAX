@@ -7,7 +7,6 @@ computation unconditionally raised NotImplementedError -- and has since
 been removed from solax entirely, so there is nothing left to test here.
 """
 import numpy as np
-import jax
 import jax.numpy as jnp
 import pytest
 

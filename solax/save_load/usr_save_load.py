@@ -66,7 +66,7 @@ def save(arg: SolaxClass | dict, path: str):
         dct = dictify(arg)
         dump_dict_with_nd(dct, path)
     except TypeError as e:
-        raise TypeError('Something wrong passed to the saver. See help(save).')
+        raise TypeError('Something wrong passed to the saver. See help(save).') from e
 
 
 def load(path: str) -> SolaxClass | dict:

@@ -2,8 +2,6 @@
 type_hinting: a shorthand type-hint alias used throughout SOLAX to
 annotate NumPy arrays by dimensionality and element type.
 """
-from typing import types
-from collections.abc import Sequence
 import numpy as np
 
 

@@ -30,7 +30,6 @@ from solax.random_keys import RandomKeys
 from solax.save_load import save, load
 from solax.save_load.dictification import dictify, undictify
 from solax.save_load.json_for_dicts import dump_dict_with_nd, load_dict_with_nd
-from solax.save_load.registration import save_load_registry
 
 
 # ---------------------------------------------------------------------------

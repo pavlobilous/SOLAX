@@ -139,7 +139,7 @@ class OperatorTerm(Sequence):
                 try:
                     other = Operator(other)
                 except TypeError:
-                    raise TypeError("Cannot perform addition since the objects are incompatible.")
+                    raise TypeError("Cannot perform addition since the objects are incompatible.") from None
             return other + self
 
 

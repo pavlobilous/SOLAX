@@ -15,7 +15,6 @@ import re
 
 import numpy as np
 import jax
-import jax.numpy as jnp
 import optax
 import flax.linen as nn
 import pytest

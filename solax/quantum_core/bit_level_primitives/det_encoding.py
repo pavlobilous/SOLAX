@@ -4,7 +4,6 @@ det_encoding: packing/unpacking a Slater determinant's occupation-number
 individual bits within that encoding.
 """
 import jax.numpy as jnp
-import numpy as np
 
 
 def det_from_bits(det_bits, *, module):

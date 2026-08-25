@@ -6,7 +6,6 @@ functions), optionally printing/reporting each update, and optionally
 driving an early stopping guard.
 """
 from collections import deque
-from itertools import chain
 import jax.numpy as jnp
 from collections.abc import Iterable, Callable
 from typing import Hashable

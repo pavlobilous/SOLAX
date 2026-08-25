@@ -7,7 +7,6 @@ rather than any one method in isolation.
 """
 import numpy as np
 import scipy as sp
-import pytest
 
 import solax as sx
 

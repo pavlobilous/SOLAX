@@ -5,7 +5,8 @@ helpers, an in-memory string buffer (Report), and the Reporter that
 ties a buffer and a prefix together.
 """
 from dataclasses import dataclass
-import io, typing
+import io
+import typing
 
 
 class Report(io.StringIO):
