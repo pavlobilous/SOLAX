@@ -25,21 +25,13 @@ def chunk_params(length, max_ind):
     return chunks_num, last_chunk_sz
 
 
-def shuffled_chunks(key, chunks_num, last_chunk_sz):
+def shuffled_chunks(key, chunks_num, max_ind, last_chunk_sz):
     """
     Builds "chunks_num" independently-shuffled index chunks (each a
     permutation of range(chunk size), as a NumPy array), splitting
     "key" via jax.random.split for each chunk. All chunks except the
-    last have "last_chunk_sz"-independent full size and the last one
-    has size "last_chunk_sz".
-
-    Note: this function reads a module-level name "max_ind" for the
-    full chunk size that is never assigned anywhere in this module
-    (it is only ever a local variable inside shuffled_inds(), not a
-    global); as written, calling this with "chunks_num" > 1 raises
-    NameError. In practice this path is never hit because
-    shuffled_inds() is always called with its default "max_ind"
-    (about 2^31), so "chunks_num" is 1 for any realistic "length".
+    last have full size "max_ind" and the last one has size
+    "last_chunk_sz".
     """
     sh_chunks = []
     for chunk in range(chunks_num):
@@ -82,9 +74,7 @@ def shuffled_inds(key, *, length: int, max_ind: int = None):
             jax.random.permutation is asked to shuffle at once (see
             chunk_params()); if 0/None (falsy), defaults to the max
             value of jnp's default int dtype (about 2^31), which for
-            any realistic "length" keeps everything in a single chunk
-            and avoids the chunking path (see the note on
-            shuffled_chunks() about the multi-chunk path).
+            any realistic "length" keeps everything in a single chunk.
     Output:
         A NumPy 1D array of "length" indices, a permutation of
         range("length").
@@ -98,7 +88,7 @@ def shuffled_inds(key, *, length: int, max_ind: int = None):
     chunks_num, last_chunk_sz = chunk_params(length, max_ind)
     
     key, subkey = jax.random.split(key)
-    sh_chunks = shuffled_chunks(subkey, chunks_num, last_chunk_sz)
+    sh_chunks = shuffled_chunks(subkey, chunks_num, max_ind, last_chunk_sz)
     
     if chunks_num > 1:
         sh_chunks = [ch + i * max_ind for i, ch in enumerate(sh_chunks)]

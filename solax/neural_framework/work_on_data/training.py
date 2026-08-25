@@ -69,17 +69,6 @@ def train_on_data(key,
         "val_metrics.early_stopping" signalled to stop (see
         EarlyStoppingGuard) before all "epochs" completed; False if
         all "epochs" ran to completion.
-    Note: at the end of every epoch this function unconditionally
-    checks "val_metrics.early_stopping", even when "val_metrics" was
-    not evaluated that epoch (i.e. even when "val_metrics" is falsy).
-    In particular, calling this with "val_metrics=None" raises
-    AttributeError there ("NoneType" has no attribute
-    "early_stopping") rather than simply skipping early-stopping
-    checks -- this looks like a latent bug. In the codebase's only
-    caller (BigBasisManager.train_classifier), "val_metrics" is always
-    a MetricsMonitor (a default AccuracyMonitor is constructed if the
-    caller doesn't supply one), so this path is not currently
-    exercised.
     """
     @exhaust_batches
     @batchify(batch_sz=batch_size, shuffle=True)
@@ -113,7 +102,7 @@ def train_on_data(key,
                 with averaging(val_metrics, report_label=ep):
                     key, subkey = jax.random.split(key)
                     validate(subkey, *val_data)
-            if val_metrics.early_stopping:
+            if val_metrics and val_metrics.early_stopping:
                 early_stopped = True
                 break
         else:

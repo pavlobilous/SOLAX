@@ -173,17 +173,9 @@ class MetricsMonitor:
 
 
     def __len__(self):
-        """
-        Note: as written this returns len(next(iter(self._data))),
-        i.e. the length of the *string name* of the first tracked
-        metric (since iterating a dict yields its keys) -- not the
-        number of tracked metrics (that would be len(self._data)) nor
-        the length of a metric's recorded history (that would be
-        len(next(iter(self._data.values())))). This looks like a
-        latent bug; it is not exercised anywhere else in the codebase
-        or the test suite.
-        """
-        return len( next(iter(self._data)) )
+        """Number of tracked metrics (not the length of any one
+        metric's recorded history -- see __getitem__ for that)."""
+        return len(self._data)
 
 
     def __getitem__(self, s):
