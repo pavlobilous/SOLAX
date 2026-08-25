@@ -32,8 +32,11 @@ class MetricsMonitor:
     inform an early stopping Guard of each update.
 
     The (optional) functions for Metrics instantiation are:
+
         metrics_fn(nn_out, label) -> metrics
+
     Note:
+
         1. They deal with single (non-vectorized) entries.
         2. Their outputs will be averaged over vectorized data.
     """

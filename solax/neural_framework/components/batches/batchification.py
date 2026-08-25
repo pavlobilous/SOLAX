@@ -60,8 +60,10 @@ def batchify(*,
     The zero-th argument of "func" is reserved for the batch index. See the type hints.
     All batchified arguments must have the same length (this is not asserted!).
     If "shuffle" is True, the data are shuffled before the generator starts yielding.
+
         --> In the latter case jax "key" needs to be passed as the first argument each time
             "batchified" function is called.
+
     If "multiple_devices" is True, up to "n_devices" batches are stacked together
         along a new dimension (which becomes axis=0);
         here "n_devices" is the number of available devices obtained automatically.

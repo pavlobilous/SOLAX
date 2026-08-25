@@ -64,7 +64,9 @@ def shuffled_inds(key, *, length: int, max_ind: int = None):
     """
     Returns a uniformly-shuffled permutation of range("length") as a
     NumPy 1D array of indices, using "key" for randomness.
+
     Input:
+
         - "key": a jax.random key.
         - "length": size of the index range to shuffle. Raises
             ValueError if 0/None (falsy).
@@ -73,6 +75,7 @@ def shuffled_inds(key, *, length: int, max_ind: int = None):
             chunk_params()); if 0/None (falsy), defaults to the max
             value of jnp's default int dtype (about 2^31), which for
             any realistic "length" keeps everything in a single chunk.
+
     Output:
         A NumPy 1D array of "length" indices, a permutation of
         range("length").

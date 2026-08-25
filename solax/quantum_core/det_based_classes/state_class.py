@@ -101,7 +101,7 @@ class State(Sequence):
 
 
     def __str__(self):
-        """Renders one "|det>  *  coeff" line per (determinant,
+        """Renders one ``|det>  *  coeff`` line per (determinant,
         coefficient) entry (up to the current dets_printing_limit()),
         appending an "..." line if entries were omitted."""
         det_coeff_strs, overflow = dets_with_coeffs_to_strs(

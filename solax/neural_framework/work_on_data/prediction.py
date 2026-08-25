@@ -16,12 +16,15 @@ def predict_on_data(model: NeuralModel,
     """
     Runs "model" over the full "features" dataset, batch by batch, and
     concatenates the results back into one array.
+
     Input:
+
         - "model": an initialized NeuralModel (or subclass, e.g.
             SoftmaxClassifier).
         - "features": the full dataset of features to predict on.
         - "batch_size" (default=None): number of entries per batch;
             None means a single batch covering the whole dataset.
+
     Output:
         A NumPy array with "model"'s (post-transformed) predictions
         for every entry of "features", in the original order (no

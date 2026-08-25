@@ -31,7 +31,9 @@ def train_on_data(key,
     """
     Trains "model" on "train_data" for up to "epochs" epochs, with
     optional per-batch/per-epoch metrics tracking and early stopping.
+
     Input:
+
         - "key": jax.random key; split as needed to shuffle each
             epoch's training batches and each validation pass.
         - "model": the NeuralModel to train (mutated in place via its
@@ -64,6 +66,7 @@ def train_on_data(key,
         - "printout_vals" (default=True): if True, metrics updates
             (training and validation) are printed to stdout as they
             happen; if False, they are computed/tracked silently.
+
     Output:
         A bool: True if training stopped early because
         "val_metrics.early_stopping" signalled to stop (see

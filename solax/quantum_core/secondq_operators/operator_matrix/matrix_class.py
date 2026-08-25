@@ -36,8 +36,8 @@ class OperatorMatrix:
     build_matrix() on Operator/OperatorTerm for how one is normally
     constructed, rather than instantiating this class directly.
 
-    Supports scalar arithmetic (+, -, *, /, unary -) with other
-    OperatorMatrix instances/numbers, hconj, and the basis-relative
+    Supports scalar arithmetic (``+``, ``-``, ``*``, ``/``, unary ``-``)
+    with other OperatorMatrix instances/numbers, hconj, and the basis-relative
     reshaping operations displace()/window()/shrink_basis() (see each
     for how they differ). Equality ("==") is deliberately unsupported
     (raises AttributeError), for the same reason as for the other
@@ -180,11 +180,12 @@ class OperatorMatrix:
                      init_basis: Basis, fin_basis: Basis,
                      axis: int | None = None):
         """
-        Extract the sub-Matrix of "matrix"
-            corresponding to the sub-Basis "fin_basis" of the "init_basis".
-        Note that "init_basis" must be the construction Basis for the current Matrix,
-            so avoid usage of this function after basis-relevant matrix transformations.
-        Argument "axis" can be 0 (rows), 1 (columns) or None (both).
+        Extract the sub-Matrix of "matrix" corresponding to the
+        sub-Basis "fin_basis" of the "init_basis". Note that
+        "init_basis" must be the construction Basis for the current
+        Matrix, so avoid usage of this function after basis-relevant
+        matrix transformations. Argument "axis" can be 0 (rows), 1
+        (columns) or None (both).
         """
         if not (init_basis.is_squeezed and fin_basis.is_squeezed):
              raise ValueError('This operation works only on "squeezed" Basis objects, '\

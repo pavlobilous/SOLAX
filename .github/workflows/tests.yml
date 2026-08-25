@@ -76,6 +76,22 @@ jobs:
           XLA_FLAGS: "--xla_force_host_platform_device_count=2"
         run: pytest -m multi_device
 
+  docs:
+    name: build Sphinx docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install solax
+        run: pip install -e ".[docs]"
+
+      - name: Build docs (warnings are errors)
+        run: sphinx-build -b html -W docs docs/_build/html
+
   build:
     name: build wheel and smoke-test install
     runs-on: ubuntu-latest

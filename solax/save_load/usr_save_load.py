@@ -38,11 +38,15 @@ def save(arg: SolaxClass | dict, path: str):
     Note:
         Since SOLAX uses dictionary keys as parts of saving paths,
         all keys in the saved dictionary must be:
+
             (1) of string type;
             (2) valid variable identifiers,
                 i. e. each "key" could potentially be a Python variable name.
+
         It is recommended to create these dicts using the "dict" constructor:
+
             dict(key1=value1, key2=value2, ...)
+
         In this case Python won't allow the keys to have a wrong format.
 
     Raises:

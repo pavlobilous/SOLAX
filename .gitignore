@@ -9,3 +9,4 @@ dist/
 .claude/
 _pjax-master-tests/
 .coverage
+docs/_build/

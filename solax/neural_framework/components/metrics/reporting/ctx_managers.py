@@ -23,7 +23,9 @@ def reporting(metrics_monitor: MetricsMonitor,
              ):
     """
     Context manager for reporting from methods of "metrics_monitor".
+
     Input:
+
         - "metrics_monitor": the MetricsMonitor to attach a reporter
             to. If None, this is a no-op (nullcontext): nothing is
             reported.
@@ -40,6 +42,7 @@ def reporting(metrics_monitor: MetricsMonitor,
             instead (nothing is printed) and the context yields that
             buffer, so the caller can inspect its contents (e.g. via
             repr()) after (or during) the "with" block.
+
     On exit (even if the block raised), the reporter is unregistered
     from "metrics_monitor", regardless of "stdout".
     """

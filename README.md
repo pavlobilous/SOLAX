@@ -66,6 +66,10 @@ XLA_FLAGS=--xla_force_host_platform_device_count=2 pytest -m multi_device  # pma
 ruff check solax/ tests/                   # lint
 ```
 
+## Authorship
+
+The code in this repository was written by Pavlo Bilous. At the packaging stage, assistance of Claude Code was used.
+
 ## License
 
 [CC0 1.0 Universal](LICENSE) (public domain dedication).

@@ -47,9 +47,10 @@ class EarlyStoppingGuard(Guard):
                 implemented by negating the watched value when
                 "smaller_better" is False, since Flax's EarlyStopping
                 always treats smaller as better.
-            - "**early_stopping_params": forwarded directly as keyword
+            - "\*\*early_stopping_params": forwarded directly as keyword
                 arguments to the underlying Flax EarlyStopping class
                 (e.g. "patience", "min_delta").
+
         Calls reset() to initialize the underlying Flax guard and
         record "model"'s current Flax state as the (initial) best one.
         """

@@ -24,7 +24,9 @@ def aggregating(metrics_monitor: MetricsMonitor,
             ):
     """
     Context manager for aggregating data before updating the MetricsMonitor.
+
     Input:
+
         - "metrics_monitor": the MetricsMonitor to aggregate updates for.
             If None, this is a no-op (nullcontext): "metrics_monitor" is
             used and updated as usual, without aggregation.
@@ -36,6 +38,7 @@ def aggregating(metrics_monitor: MetricsMonitor,
         - "report_label" (default=""): label passed to the single,
             reduced update that is submitted to "metrics_monitor" on
             exit.
+
     While inside the "with" block, "metrics_monitor"'s data, reporters,
     and guards (including early stopping) are swapped out for empty
     ones, so any calls to update()/eval_and_update() during the block

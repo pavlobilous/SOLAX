@@ -63,9 +63,9 @@ class Operator(Mapping):
     a "daggers" tuple (as in OperatorTerm) to the OperatorTerm holding
     all monomials with that pattern, plus an optional "scalar" key for
     a pure-number (identity) term. Supports dict-like access (indexing
-    by key, `in`, keys()/values()/items(), iteration, len()) as well as
-    arithmetic (+, -, *, /, unary -) with other Operators, OperatorTerms,
-    and plain numbers.
+    by key, ``in``, keys()/values()/items(), iteration, len()) as well as
+    arithmetic (``+``, ``-``, ``*``, ``/``, unary ``-``) with other
+    Operators, OperatorTerms, and plain numbers.
 
     Equality ("==") is deliberately unsupported (raises AttributeError),
     for the same reason as for OperatorTerm. Call an Operator on a Basis
@@ -80,11 +80,13 @@ class Operator(Mapping):
     def __init__(self, *args, **kwargs):
         """
         Flexible constructor, accepting one of:
+
         - nothing: an empty Operator;
         - a single Number: a pure scalar Operator;
         - a single OperatorTerm: an Operator with just that term;
         - the same (daggers, posits, coeffs) arguments OperatorTerm
           itself accepts, forwarded to build one term.
+
         Raises TypeError with a detailed message otherwise.
         """
         try:
@@ -299,8 +301,9 @@ class Operator(Mapping):
                     ) -> OperatorMatrix:
         """
         Builds the matrix representation of this Operator in the given
-        basis/bases: the (row, col) entry is <basis_rows[row]| self
-        |basis_cols[col]>. If "basis_cols" is omitted, it defaults to
+        basis/bases: the (row, col) entry is the matrix element of self
+        between basis_rows[row] (bra) and basis_cols[col] (ket). If
+        "basis_cols" is omitted, it defaults to
         "basis_rows" (a square matrix). Both bases must be squeezed
         (no duplicate determinants); "det_batch_size"/"op_batch_size"/
         "multiple_devices" are the same batching/device knobs as in

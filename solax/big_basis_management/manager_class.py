@@ -23,14 +23,15 @@ class BigBasisManager:
     SciPost Phys. Codebases 51 Sec. 3 (Fig. "Neural network support for
     tackling big basis sets") for one big basis of not-yet-classified
     "candidates" determinants ("big_basis"):
-      (A) sample_subbasis: randomly draw a small subset of candidates.
-      (B) derive_abs_coeff_cut: after diagonalizing on that random
-          selection, derive a coefficient-magnitude cutoff calibrated
-          to select roughly a target number of "important" determinants.
-      (C) train_classifier / predict_impt_subbasis: train "classifier"
-          (a BasisClassifier) on the random selection, labeled by that
-          cutoff, then run it over the full "candidates" basis to
-          predict which candidates are important.
+
+    - (A) sample_subbasis: randomly draw a small subset of candidates.
+    - (B) derive_abs_coeff_cut: after diagonalizing on that random
+      selection, derive a coefficient-magnitude cutoff calibrated
+      to select roughly a target number of "important" determinants.
+    - (C) train_classifier / predict_impt_subbasis: train "classifier"
+      (a BasisClassifier) on the random selection, labeled by that
+      cutoff, then run it over the full "candidates" basis to
+      predict which candidates are important.
 
     Each BigBasisManager instance is bound to the particular "big_basis"
     it was constructed with; a new BigBasisManager must be created for
@@ -71,7 +72,8 @@ class BigBasisManager:
         candidate pool, applying this same cutoff there is expected to
         select approximately "target_num" important determinants out
         of the whole pool. The returned cutoff is the midpoint between
-        the two sorted |coefficient| values straddling that fraction.
+        the two sorted absolute-coefficient values straddling that
+        fraction.
         """
         abs_coeff_srt = np.sort(
             np.abs(rand_substate.coeffs)
@@ -97,7 +99,7 @@ class BigBasisManager:
         -- typically the same random selection that was diagonalized
         to derive "abs_coeff_cut" (see sample_subbasis /
         derive_abs_coeff_cut). Labels are obtained by thresholding each
-        determinant's weight (|coefficient|) in "train_state" against
+        determinant's weight (absolute value of its coefficient) in "train_state" against
         "abs_coeff_cut"; features are the bit-encoded determinants of
         train_state.basis. "key" is split to both shuffle "train_state"
         into a training/validation split (a val_frac fraction held out
@@ -107,9 +109,9 @@ class BigBasisManager:
         other batching/reporting knobs default to DEFAULT_TRAIN_KWARGS
         (see training_defaults.py) and, together with any further
         keywords accepted by train_on_data, can be overridden via
-        **train_kwargs.
+        ``**train_kwargs``.
 
-        Unless **train_kwargs already supplies a "val_metrics" monitor,
+        Unless ``**train_kwargs`` already supplies a "val_metrics" monitor,
         validation is tracked with a fresh AccuracyMonitor; in that
         default case, if "early_stop" is True, the monitor is further
         given an EarlyStoppingGuard (configured via "early_stop_params",

@@ -24,8 +24,10 @@ class OperatorTerm(Sequence):
     creation/annihilation ladder operators ("daggers", 1=creation
     a-dagger/0=annihilation a, applied right to left as usual) at given
     spin-orbital positions, summed over a batch of position rows, each
-    with its own prefactor:
+    with its own prefactor::
+
         sum_i coeffs[i] * (op_{daggers[0]} at posits[i, 0]) ... (op_{daggers[-1]} at posits[i, -1])
+
     "daggers" is a tuple of 0/1 shared by all rows (which specific
     physical operator this represents is entirely the caller's choice
     of pattern); "posits" is a 2D integer array (one row of

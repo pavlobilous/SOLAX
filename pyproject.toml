@@ -41,6 +41,7 @@ Paper = "https://www.scipost.org/SciPostPhysCodeb.51"
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov"]
 lint = ["ruff"]
+docs = ["sphinx", "furo"]
 
 [tool.setuptools.dynamic]
 version = { attr = "solax.__version__" }

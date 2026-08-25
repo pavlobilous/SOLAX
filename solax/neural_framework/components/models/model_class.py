@@ -28,10 +28,13 @@ class NeuralModel:
     state).
 
     The functions needed for instantiating a Model are:
+
         call_on_entry(nn_inp) -> nn_out
         loss_fn(nn_out, label) -> loss
         post_transform(nn_out) -> nn_out_transformed
+
     Note:
+
         1. All functions deal with single (non-vectorized) entries.
         2. Outputs from loss_fn will be averaged over vectorized data.
     """
@@ -55,6 +58,7 @@ class NeuralModel:
                 nn_out -> transformed output, applied after the
                 forward pass at prediction time (see get_predictor()),
                 e.g. argmax for a classifier.
+
         Builds the JIT-compiled trainer/predictor functions (see
         jitted_core.get_trainer/get_predictor) right away, but does
         not yet build the Flax state -- call initialize() for that.
