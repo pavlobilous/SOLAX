@@ -1,5 +1,9 @@
-from jax import jit, vmap, pmap
-
+"""
+vectorizations: vmap/pmap-batched variants of ladder_mappings/
+commut_phases -- applying a batch of position rows to a batch of
+determinants (and phase computation) in one vectorized/parallel call,
+optionally spread across local JAX devices via pmap.
+"""
 from .ladder_mappings import *
 from .commut_phases import *
 

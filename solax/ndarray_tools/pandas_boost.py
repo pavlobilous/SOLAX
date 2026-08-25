@@ -1,3 +1,9 @@
+"""
+pandas_boost: array-level set/aggregation operations (byte-packed
+row hashing/indexing, summing by indexer, deduplication, set
+difference) built on top of pandas.Index, used throughout quantum_core
+for fast determinant-row bookkeeping.
+"""
 import numpy as np
 import pandas as pd
 from typing import TypeVar, Any

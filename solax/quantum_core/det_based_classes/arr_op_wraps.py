@@ -1,3 +1,8 @@
+"""
+arr_op_wraps: shared plumbing for lifting a data-level binary operation
+to the level of a solax class (Basis/State), handling the "bitlen == 0"
+special case uniformly.
+"""
 from collections.abc import Callable
 from typing import TypeVar
 
@@ -13,7 +18,7 @@ def op_on_cls(op_on_data: Callable[[D, D], D],
                     ) -> tuple[D, int]:
     """
     Performs operation "op_on_data" (initially defined on data D)
-        at the level of a SOLAX class T (e.g. Basis or State),
+        at the level of a solax class T (e.g. Basis or State),
         and handles zero cases for the "bitlen" attribute
     """
     if get_bitlen(self) == 0:

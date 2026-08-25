@@ -1,3 +1,7 @@
+"""
+Operator: a second-quantized operator as a sum of OperatorTerm monomials
+(one per distinct daggers pattern) plus an optional scalar (identity) term.
+"""
 import numpy as np
 from numbers import Number, Integral, Real
 from collections.abc import Mapping
@@ -12,26 +16,35 @@ from .operator_matrix import *
 
 
 def get_default(op, key):
+    """The value Operator "op" would report for "key" if it were present:
+    a zero-length OperatorTerm with that daggers pattern, or 0 for
+    "scalar". Used by __add__ to add two Operators key-by-key even
+    where one side is missing a key."""
     default = OperatorTerm(key, np.array([]), np.ones(0)) if key != "scalar" else 0
     return op._d.get(key, default)
 
 
 def op_from_dict(_d):
+    """Builds an Operator directly from an already-prepared internal
+    dict, bypassing __init__'s argument parsing."""
     op = Operator()
     op._d = _d
     return op
 
 
 def key_to_str(key):
+    """Encodes an Operator key (a daggers tuple, or the string
+    "scalar") as a JSON-safe string, for __pre_dictify__."""
     if isinstance(key, tuple):
         return "_" + "".join(str(v) for v in key)
     elif key == "scalar":
         return "_"
     else:
         return key
-        
+
 
 def str_to_key(s):
+    """Inverse of key_to_str, for __post_undictify__."""
     return tuple(int(v) for v in s[1:]) if (len(s) > 1) else "scalar"
     
     
@@ -45,12 +58,37 @@ One of the following must be passed:
  
 @dataclass
 class Operator(Mapping):
+    """
+    A second-quantized operator, represented as a read-only Mapping from
+    a "daggers" tuple (as in OperatorTerm) to the OperatorTerm holding
+    all monomials with that pattern, plus an optional "scalar" key for
+    a pure-number (identity) term. Supports dict-like access (indexing
+    by key, ``in``, keys()/values()/items(), iteration, len()) as well as
+    arithmetic (``+``, ``-``, ``*``, ``/``, unary ``-``) with other
+    Operators, OperatorTerms, and plain numbers.
+
+    Equality ("==") is deliberately unsupported (raises AttributeError),
+    for the same reason as for OperatorTerm. Call an Operator on a Basis
+    or State to apply it (see __call__); use build_matrix() to get its
+    matrix representation directly.
+    """
     _d : dict[ Literal["scalar"] | tuple, Number | OperatorTerm ]
-    
+
     __array_ufunc__ = None
-    
-    
+
+
     def __init__(self, *args, **kwargs):
+        """
+        Flexible constructor, accepting one of:
+
+        - nothing: an empty Operator;
+        - a single Number: a pure scalar Operator;
+        - a single OperatorTerm: an Operator with just that term;
+        - the same (daggers, posits, coeffs) arguments OperatorTerm
+          itself accepts, forwarded to build one term.
+
+        Raises TypeError with a detailed message otherwise.
+        """
         try:
             op_term = OperatorTerm(*args, **kwargs)
             args = [op_term]
@@ -76,6 +114,9 @@ class Operator(Mapping):
                 
                 
     def __repr__(self):
+        """Shows the constructor-style dict of daggers-key -> repr(term)
+        (and "scalar" -> its value, if present), one entry per line;
+        "Operator({})" for an empty Operator."""
         if self:
             d_repr = ",\n".join(
                 f"{str(k)}: {repr(v)}" for k, v in self._d.items()
@@ -87,36 +128,45 @@ class Operator(Mapping):
                 
                 
     def __len__(self):
+        """Number of terms, including the "scalar" term if present."""
         return len(self._d)
-            
-                
+
+
     def __getitem__(self, s):
+        """Looks up a term by its daggers tuple. A bare 0 or 1 is
+        normalized to (0,)/(1,). Raises KeyError if absent."""
         if s == 0 or s == 1:
             s = (s,)
         return self._d[s]
-    
-    
+
+
     def __iter__(self):
         return iter(self._d)
-    
-    
+
+
     def __reversed__(self):
         return reversed(self._d)
-    
-    
+
+
     def keys(self):
+        """Keys (daggers tuples, plus "scalar" if present); see Mapping.keys()."""
         return self._d.keys()
-    
-    
+
+
     def values(self):
+        """Terms (OperatorTerm/Number values); see Mapping.values()."""
         return self._d.values()
-    
-    
+
+
     def items(self):
+        """(key, term) pairs; see Mapping.items()."""
         return self._d.items()
-    
-    
+
+
     def drop(self, *key):
+        """Returns a new Operator without the term at "key" (a daggers
+        tuple, its individual ints, or "scalar"). Raises KeyError if the
+        key isn't present."""
         key = tuple(key)
         if len(key) == 1 and not isinstance(key[0], Integral):
             key = key[0]
@@ -124,30 +174,42 @@ class Operator(Mapping):
             raise KeyError("Could not find the provided key.")
         d = {k: v for k, v in self.items() if k != key}
         return op_from_dict(d)
-    
-    
+
+
     def chop(self, key, abs_coeff_cut: Real) -> "Self":
+        """Returns a new Operator with the term at "key" chopped (see
+        OperatorTerm.chop), other terms unchanged. Raises KeyError if
+        "key" is absent, or TypeError for the "scalar" key (a single
+        number has no per-entry coefficients to chop)."""
         if key not in self:
-            raise KeyError("Could not find the provided key.")     
+            raise KeyError("Could not find the provided key.")
         if key == "scalar":
             raise TypeError("Chopping is not supported for the scalar term.")
         op_term = self[key].chop(abs_coeff_cut)
         op_without = self.drop(key)
         return op_without + op_term
-    
-    
+
+
     def __eq__(self, other):
+        """Always raises AttributeError: equality is deliberately
+        unsupported for Operator (see the class docstring)."""
         raise AttributeError('Equality == is not implemented for the Operator class.')
-        
-        
+
+
     def __mul__(self, scalar: Number):
+        """Scales every term (including "scalar", if present) by
+        "scalar"."""
         if not isinstance(scalar, Number):
             return NotImplemented
         d = {key: term * scalar for key, term in self.items()}
         return op_from_dict(d)
-    
-    
+
+
     def __add__(self, other):
+        """Adds "other" (an Operator, OperatorTerm, or Number) term by
+        term, unioning the set of keys; a key present on only one side
+        is combined with the appropriate default (a zero-length
+        OperatorTerm, or 0 for "scalar") from the other."""
         if isinstance(other, OperatorTerm | Number):
             other = Operator(other)
         elif not isinstance(other, Operator):
@@ -166,6 +228,9 @@ class Operator(Mapping):
     
     @property
     def hconj(self):
+        """Hermitian conjugate: conjugates the "scalar" term (if any)
+        and, for each other term, takes OperatorTerm.hconj and re-keys
+        it by its (reversed) daggers pattern."""
         d = {}
         for key, val in self.items():
             if key != "scalar":
@@ -184,7 +249,18 @@ class Operator(Mapping):
                  multiple_devices: bool = False,
                  det_tracking: bool = False
                  ) -> Basis | State:
-        
+        """
+        Applies this Operator to a Basis or a State, summing the
+        contributions of all its terms. On a State, the "scalar" term
+        (if present) contributes that number times "arg", as expected.
+        On a bare Basis, the "scalar" term instead acts effectively as
+        the unity operator -- it contributes "arg" unchanged, regardless
+        of the scalar's actual value, even 0 -- since a Basis carries no
+        coefficients to scale (per SciPost Phys. Codebases 51 Sec. 2.5).
+        Returns the same kind of object as "arg"; the other keyword
+        arguments behave exactly as in OperatorTerm.__call__, which see.
+        Raises ValueError if this Operator is empty (len(self) == 0).
+        """
         if not isinstance(arg, Basis | State):
             return NotImplemented
         if len(self) == 0:
@@ -223,6 +299,16 @@ class Operator(Mapping):
                      op_batch_size: int | None = None,
                      multiple_devices: bool = False
                     ) -> OperatorMatrix:
+        """
+        Builds the matrix representation of this Operator in the given
+        basis/bases: the (row, col) entry is the matrix element of self
+        between basis_rows[row] (bra) and basis_cols[col] (ket). If
+        "basis_cols" is omitted, it defaults to
+        "basis_rows" (a square matrix). Both bases must be squeezed
+        (no duplicate determinants); "det_batch_size"/"op_batch_size"/
+        "multiple_devices" are the same batching/device knobs as in
+        OperatorTerm.__call__.
+        """
         mat = OperatorMatrix.from_operator(
             self, basis_rows, basis_cols,
             det_batch_size=det_batch_size,
@@ -233,11 +319,14 @@ class Operator(Mapping):
     
     
     def __pre_dictify__(self):
+        """Hook used by solax.save(): re-keys terms with JSON-safe
+        string keys (tuples/"scalar" aren't valid dict keys in JSON)."""
         d = {key_to_str(k): v for k, v in self.items()}
         return op_from_dict(d)
-    
-    
+
+
     def __post_undictify__(self):
+        """Inverse of __pre_dictify__, used by solax.load()."""
         d = {str_to_key(s): v for s, v in self.items()}
         return op_from_dict(d)
     
