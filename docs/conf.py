@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 import solax  # noqa: E402
 
-project = "SOLAX"
+project = "quantumsolax"
 copyright = "Pavlo Bilous"
 author = "Pavlo Bilous"
 release = solax.__version__

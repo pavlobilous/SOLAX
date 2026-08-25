@@ -1,5 +1,5 @@
-SOLAX
-=====
+quantumsolax
+============
 
 A `JAX <https://github.com/jax-ml/jax>`_-based Python package for fermionic
 quantum many-body systems: second-quantized operators built from bases of
