@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solax"
+dynamic = ["version"]
+description = "A Python solver for fermionic quantum systems with neural network support"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Pavlo Bilous", email = "pavlo.bilous@proton.me" },
+]
+keywords = ["quantum", "fermions", "second quantization", "jax", "neural networks"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "jax",
+    "flax",
+    "optax",
+    "orbax-checkpoint",
+]
+
+[project.urls]
+Homepage = "https://github.com/pavlo-bilous/SOLAX"
+Repository = "https://github.com/pavlo-bilous/SOLAX"
+Paper = "https://www.scipost.org/SciPostPhysCodeb.51"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.dynamic]
+version = { attr = "solax.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["solax*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: exercises real NN training (flax/optax); not run by default in CI's fast job",
+    "multi_device: exercises jax.pmap-based kernels; needs >=2 local JAX devices, e.g. via XLA_FLAGS=--xla_force_host_platform_device_count=2",
+]
