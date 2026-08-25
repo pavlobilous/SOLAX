@@ -56,9 +56,7 @@ class State(Sequence):
     returning a State. See SciPost Phys. Codebases 51 Sec. 2.3.
 
     Equality ("==") is deliberately unsupported (raises AttributeError)
-    since two States can be numerically "the same" in more than one
-    representation (different determinant order, repeated determinants);
-    compare via inner product ((s1 - s2) * (s1 - s2)) or chop() instead.
+    to avoid uncontrollable effects due to machine precision, see the paper.
 
     Adding two States (+) merges/sums coefficients at determinants
     shared BETWEEN the two operands (built on Basis.__add__, which
