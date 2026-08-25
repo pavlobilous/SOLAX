@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "solax"
+name = "quantumsolax"
 dynamic = ["version"]
 description = "A Python solver for fermionic quantum systems with neural network support"
 readme = "README.md"
@@ -34,8 +34,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pavlo-bilous/SOLAX"
-Repository = "https://github.com/pavlo-bilous/SOLAX"
+Homepage = "https://github.com/pavlo-bilous/quantumsolax"
+Repository = "https://github.com/pavlo-bilous/quantumsolax"
 Paper = "https://www.scipost.org/SciPostPhysCodeb.51"
 
 [project.optional-dependencies]
