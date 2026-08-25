@@ -4,15 +4,14 @@ Covers solax.OperatorTerm.__call__ applied to a Basis or a State: plain
 (unbatched) execution, batching via det_batch_size/op_batch_size, and
 det_tracking -- with batched results checked against unbatched ones.
 
-Not ported (project decision on the incomplete NumPy phase backend, see also
-tests/test_bit_level_primitives.py): the "NumPy backend" cells that use
-`with op_action_via_numpy(): ...` are dropped entirely, not xfail'd. That
-backend calls into numpy_engine/phases.py's build_ladseq_pmask, which
-unconditionally raises NotImplementedError -- an abandoned experiment, never
-released behavior. Any later cell that only exists to compare/use a variable
-defined inside such a block (e.g. `res_basis_b2`, `res_state_b2`, and their
-downstream comparison cells) is dropped along with it, since it has no
-meaning once the NumPy-backend block is gone.
+Not ported (see also tests/test_bit_level_primitives.py): the "NumPy backend"
+cells that use `with op_action_via_numpy(): ...`. That backend was an
+abandoned experiment (its phase computation unconditionally raised
+NotImplementedError) and has since been removed from solax entirely -- the
+`op_action_via_numpy` context manager no longer exists. Any later cell that
+only exists to compare/use a variable defined inside such a block (e.g.
+`res_basis_b2`, `res_state_b2`, and their downstream comparison cells) is
+dropped along with it, since it has no meaning once that code is gone.
 
 Also dropped: cells that only measure wall-clock time (`pc()` /
 `perf_counter()` deltas) under the notebook's "Time checks" heading -- not

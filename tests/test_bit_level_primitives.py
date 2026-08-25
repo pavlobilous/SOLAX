@@ -1,10 +1,10 @@
 """Ported from _pjax-master-tests/tests/2.bit_level_primitives.ipynb.
 
-Not ported (see project decision on the incomplete NumPy phase backend):
-the "NumPy engine / B. Phases" section (ladseq_phase_vDet_vOpt_np), since
-its underlying numpy_engine.phases.build_ladseq_pmask unconditionally raises
-NotImplementedError -- it was an unfinished experiment, never released
-behavior, so there is nothing to test.
+Not ported: the notebook's "NumPy engine" section. That backend (a pure
+NumPy alternative to the default JAX execution path, toggled via
+op_action_via_numpy()) was an unfinished experiment -- its phase
+computation unconditionally raised NotImplementedError -- and has since
+been removed from solax entirely, so there is nothing left to test here.
 """
 import numpy as np
 import jax
@@ -146,36 +146,6 @@ def test_vmapped_ladseq_mapping_and_phase():
 
     phase = ladseq_phase_vDet_vOpt(codes, bitlen, posits)
     np.testing.assert_array_equal(phase, np.array([[1, 1], [-1, -1], [-1, -1]]))
-
-
-def test_numpy_engine_ladders_matches_jax():
-    """The NumPy-engine ladder mapping (as opposed to phases, see module
-    docstring) is fully implemented and must agree with the JAX version."""
-    from solax.quantum_core.bit_level_primitives.numpy_engine import (
-        map_with_ladseq_vDet_vOpt_np,
-    )
-
-    bits = np.array(
-        [
-            [1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0],
-            [0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0],
-            [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
-            [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0],
-            [1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0],
-            [0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0],
-        ]
-    )
-    codes, bitlen = det_from_bits(bits, module=jnp)
-    bit_posits = jnp.array([[0, 1, 2], [3, 1, 1], [5, 2, 1], [5, 2, 6]])
-    daggers = jnp.array([0, 0, 1])
-
-    d1, v1 = map_with_ladseq_vDet_vOpt(codes, bit_posits, daggers)
-    d2, v2 = map_with_ladseq_vDet_vOpt_np(
-        np.array(codes), np.vstack(bit_posits), daggers
-    )
-
-    np.testing.assert_array_equal(d1, d2)
-    np.testing.assert_array_equal(v1, v2)
 
 
 @pytest.mark.multi_device

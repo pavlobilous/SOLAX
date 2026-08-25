@@ -4,14 +4,10 @@ from typing import Generator, Tuple
 
 from ....utils.multi_batching import *
 from ...bit_level_primitives import *
-from ...mode_ctrl.backend import backend_params
 
 
 def gen_det_batches(basis_len, det_batch_size, multiple_devices: bool):
-    if backend_params["ENGINE"] == "numpy":
-        n_devices = 1
-    else:
-        n_devices = jax.local_device_count() if multiple_devices else 1
+    n_devices = jax.local_device_count() if multiple_devices else 1
     det_batch_size = det_batch_size or basis_len
     return gen_pack_edges(basis_len, det_batch_size, n_devices)
 
@@ -22,24 +18,14 @@ def gen_op_batches(op_term_len, op_batch_size):
 
 
 def ladders_func(enc_batch, posits_batch, daggers):
-    if backend_params["ENGINE"] == "numpy":
-        enc_batch = enc_batch[0]
-        f = map_with_ladseq_vDet_vOpt_np
-    else:
-        f = map_with_ladseq_pvDet_vOpt
-    enc, valid = f(enc_batch, posits_batch, daggers)
+    enc, valid = map_with_ladseq_pvDet_vOpt(enc_batch, posits_batch, daggers)
     enc = np.asarray(enc)
     valid = np.where(valid.reshape(-1))[0]
     return enc, valid
 
 
 def phases_func(enc_batch, bitlen, posits_batch):
-    if backend_params["ENGINE"] == "numpy":
-        enc_batch = enc_batch[0]
-        f = ladseq_phase_vDet_vOpt_np
-    else:
-        f = ladseq_phase_pvDet_vOpt
-    phs = f(enc_batch, bitlen, posits_batch)
+    phs = ladseq_phase_pvDet_vOpt(enc_batch, bitlen, posits_batch)
     return np.asarray(phs)
 
 

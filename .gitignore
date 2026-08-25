@@ -8,3 +8,4 @@ dist/
 *.egg-info/
 .claude/
 _pjax-master-tests/
+.coverage
