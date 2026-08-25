@@ -140,8 +140,7 @@ def test_call_on_state_batched_by_det_and_op_matches_unbatched_numerically():
 # ---------------------------------------------------------------------------
 
 _SIAM_OLD_COEFFS_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "_pjax-master-tests" / "tests" / "res_s.coeff.old.npy"
+    Path(__file__).resolve().parent / "data" / "res_s.coeff.old.npy"
 )
 
 
