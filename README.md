@@ -53,6 +53,28 @@ print(matrix.to_scipy().todense())
 - **`save_load`** — `sx.save`/`sx.load`: persist and restore solax objects (or nested dicts mixing them with NumPy arrays and plain Python values) to/from disk, without pickle.
 - **`neural_framework`** — a generic, reusable FLAX-based training layer underlying `BasisClassifier`, exposed for anyone wanting to build similar NN-assisted tools.
 
+## Advanced use
+
+The article *SciPost Phys. Codebases 51* describes the quantumsolax functionality usually necessary for fermionic many-body computations. This section documents additional functionality not covered there.
+
+### Squeezing (deduplication) control
+
+`Basis` and `State` normally deduplicate their determinants automatically — on construction, and after operations (`+`, applying an `OperatorTerm`) that might introduce repeats. `is_squeezed` reports whether an object currently holds no duplicates, and `squeeze()` returns a deduplicated copy (merging coefficients for `State`, keeping the first occurrence for `Basis`). To build up an intermediate result across several steps without paying for deduplication after each one, wrap the steps in `manual_squeezing()` (`solax.quantum_core.mode_ctrl`), which suspends all automatic squeezing for its duration — then call `squeeze()` explicitly once at the end.
+
+### Tracking determinants through an operator application
+
+`Operator`/`OperatorTerm.__call__` accept a `det_tracking=True` keyword: alongside the usual result, it returns a 1D integer array mapping each determinant in the *output* back to the index of the determinant in the *input* it came from — useful when you need to know, not just compute, which input determinant produced which output.
+
+### Building a custom NN-assisted tool with `neural_framework`
+
+`BasisClassifier`/`BigBasisManager` are one particular application (basis-importance classification) of a smaller, generic Flax/JAX training layer, `solax.neural_framework`, importable and reusable directly for other "features → labels" tasks:
+
+- `NeuralModel(call_on_entry, loss_fn, post_transform=identity)` wraps a per-entry architecture function, loss, and optional output transform into a trainable model; call `.initialize(key, dummy_features, optimizer)` once before use.
+- `train_on_data(key, model, train_data, *, val_data=None, batch_size=None, epochs=1, train_metrics=None, val_metrics=None, ...)` runs the batched training loop, with optional validation and early stopping via a `MetricsMonitor`/`Guard`.
+- `predict_on_data(model, features, *, batch_size=None)` runs batched inference; the model is also directly callable on a batch of features.
+
+`LeastSqRegressor`/`SoftmaxClassifier` (`neural_framework.ready_classes`) are worked examples of subclassing `NeuralModel` for a specific loss/output configuration, paired with `LossMonitor`/`AccuracyMonitor` for tracking.
+
 ## For developers
 
 This section contains remarks for future developers of code based on quantumsolax.
