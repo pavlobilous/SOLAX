@@ -9,6 +9,11 @@ project = "quantumsolax"
 copyright = "Pavlo Bilous"
 author = "Pavlo Bilous"
 release = solax.__version__
+# The default title is "<project> v<release> documentation" -- release is
+# a long git-derived dev-build string (e.g. "0.1.dev36+g2e5a382c9") between
+# tagged versions, which wraps awkwardly in the sidebar. Keep the title
+# short and stable; the full version is still available via solax.__version__.
+html_title = f"{project} documentation"
 
 extensions = [
     "sphinx.ext.autodoc",
