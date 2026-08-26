@@ -3,8 +3,7 @@ NeuralModel: the generic, task-agnostic wrapper around a Flax-based
 neural network -- construction from plain per-entry functions,
 JIT-compiled train/predict steps, and Orbax-based checkpointing. This
 is the base class behind the ready-made LeastSqRegressor/
-SoftmaxClassifier (see ready_classes.py) and, at the solax interface
-level, behind BasisClassifier (SciPost Phys. Codebases 51).
+SoftmaxClassifier (see ready_classes.py).
 """
 import os
 from collections.abc import Callable

@@ -1,16 +1,12 @@
 """
 The class registry backing solax's save/load machinery.
 
-"dictify"/"undictify" (see solax.save_load.dictification) only know how
-to convert a Python object to/from a plain dict if the object's class
-has been registered here beforehand: each registered class is bound to
-a string "label" (used inside the saved dict/JSON as the ".class" tag)
-and a reconstruction callable that rebuilds an instance from its
-dictified attributes. solax's own classes (Basis, State, OperatorTerm,
-Operator, OperatorMatrix, RandomKeys) register themselves as a side
-effect of being imported; user classes can be registered the same way
-via the shared "save_load_registry" instance defined at the bottom of
-this module.
+A class becomes dictifiable only once registered here: each registered
+class is bound to a string "label" (used inside the saved dict/JSON as
+the ".class" tag) and a reconstruction callable that rebuilds an
+instance from its dictified attributes. Classes register themselves as
+a side effect of being imported, via the shared "save_load_registry"
+instance defined at the bottom of this module.
 """
 from collections.abc import Callable
 from typing import Any, TypeVar
@@ -131,6 +127,6 @@ class SaveLoadRegistry:
 
 
 save_load_registry = SaveLoadRegistry()
-"""The single SaveLoadRegistry instance shared across solax; all of
-solax's own saveable classes register themselves here on import, and
-"solax.save_load.save"/"solax.save_load.load" look classes up here."""
+"""The single SaveLoadRegistry instance shared across solax; classes
+register themselves here on import and are looked up by label during
+(de)serialization."""

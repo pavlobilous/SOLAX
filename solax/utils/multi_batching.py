@@ -18,9 +18,7 @@ def gen_pack_edges(data_len, batch_size, n_devices):
     however many fit, less than "n_devices"); any final remainder
     smaller than "batch_size" is yielded on its own with width=1. Yields
     nothing for the corresponding tail portion if it is empty (e.g. when
-    "data_len" is an exact multiple of "batch_size" * "n_devices"). Used
-    by gen_det_batches()/gen_op_batches() to drive the batched/
-    multi-device evaluation in act_in_batches_generator().
+    "data_len" is an exact multiple of "batch_size" * "n_devices").
     """
     pack_size = batch_size * n_devices
     n_packs = data_len // pack_size
