@@ -3,7 +3,7 @@
 [![tests](https://github.com/pavlo-bilous/quantumsolax/actions/workflows/tests.yml/badge.svg)](https://github.com/pavlo-bilous/quantumsolax/actions/workflows/tests.yml)
 [![docs](https://readthedocs.org/projects/quantumsolax/badge/?version=latest)](https://quantumsolax.readthedocs.io/en/latest/?badge=latest)
 
-A [JAX](https://github.com/jax-ml/jax)-based Python library for solving fermionic quantum many-body systems with neural network support. The framework allows to efficiently encode and manipulate bases of Slater determinants, quantum states and operators within the second quantization formalism. Operators can be converted to matrices on a given basis for subsequent diagonalization. In case the basis is too large to treat directly, neural-network-assisted support can be leveraged to select the most important Slater determinants. See the paper for the full design and physics background: [SciPost Phys. Codebases 51](https://www.scipost.org/SciPostPhysCodeb.51).
+A [JAX](https://github.com/jax-ml/jax)-based Python library for solving fermionic quantum many-body systems with neural network support. The framework allows to efficiently encode and manipulate bases of Slater determinants, quantum states and operators within the second quantization formalism. Operators can be converted to matrices on a given basis for subsequent diagonalization. In case the basis is too large to treat directly, neural-network-assisted support can be leveraged to select the most important Slater determinants. See the paper for the full design and physics background: [SciPost Phys. Codebases 51](https://www.scipost.org/SciPostPhysCodeb.51). Full documentation is at [quantumsolax.readthedocs.io](https://quantumsolax.readthedocs.io/).
 
 ## Installation
 
@@ -11,13 +11,13 @@ A [JAX](https://github.com/jax-ml/jax)-based Python library for solving fermioni
 pip install quantumsolax
 ```
 
-This installs a CPU-only JAX by default, following JAX's own convention. For GPU acceleration, additionally install the CUDA build of JAX matching your system:
+This installs a CPU-only JAX version. For GPU acceleration, additionally install the CUDA build of JAX matching your system:
 
 ```bash
 pip install -U "jax[cuda12]"
 ```
 
-Requires Python >=3.10. Full documentation is at [quantumsolax.readthedocs.io](https://quantumsolax.readthedocs.io/).
+Requires Python >=3.10.
 
 For development (running the test suite, linting):
 
