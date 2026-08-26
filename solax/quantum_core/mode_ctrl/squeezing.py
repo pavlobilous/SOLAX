@@ -1,7 +1,7 @@
 """
-Global switches controlling when Basis/State/OperatorTerm automatically
-"squeeze" (deduplicate/merge) their rows, and the manual_squeezing()
-context manager for suspending that behavior.
+Global switches controlling when quantum_core's determinant/row-based
+classes automatically "squeeze" (deduplicate/merge) their rows, and the
+manual_squeezing() context manager for suspending that behavior.
 """
 from contextlib import contextmanager
 from copy import deepcopy
@@ -20,9 +20,9 @@ squeeze_params = {
 def manual_squeezing():
     """
     Context manager that temporarily disables all automatic
-    "squeezing" (duplicate-determinant/duplicate-row deduplication) on
-    Basis/State/OperatorTerm construction, addition, and OperatorTerm
-    application, restoring the previous squeeze_params on exit. Used
+    "squeezing" (duplicate-determinant/duplicate-row deduplication)
+    during construction, addition, and application of squeezable
+    objects, restoring the previous squeeze_params on exit. Used
     internally wherever an intermediate result must be built without
     eagerly deduplicating it (e.g. while assembling a larger result in
     stages); "squeeze"/deduplication is solax's own internal naming,

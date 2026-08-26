@@ -15,11 +15,22 @@ def get_object_hook(root_path: str):
 
     The returned "object_hook" is called by the json module on every
     JSON object as it is decoded, innermost first. If the object is one
-    of dumper.py's array placeholders, {".ndarray_path": rel_path}, it
-    is replaced by the actual array loaded from
+    of dumper.py's array placeholders, {".ndarray_path": rel_path,
+    ".is_scalar": ...}, it is replaced by the actual array loaded from
     "root_path"/"rel_path" (written by dumper.py's save_arr()); any
     other dict is passed through unchanged (leaving further
     interpretation, e.g. of ".class"-tagged dicts, to undictify()).
+
+    np.save/np.load do not distinguish a bare NumPy scalar (e.g.
+    np.float64(0.5)) from a true 0-d ndarray -- both are written to,
+    and loaded back from, ".npy" as a 0-d array. So a loaded 0-d array
+    is converted back to the original scalar (via "arr[()]") whenever
+    the placeholder's ".is_scalar" flag says the saved value was one.
+    Placeholders written before this flag existed lack it; for those,
+    ".is_scalar" is approximated as "arr.ndim == 0" -- which correctly
+    recovers a scalar in every case observed in solax's own classes,
+    but would also (unavoidably, given the missing flag) convert a
+    deliberately-saved 0-d ndarray from such an old save to a scalar.
     """
 
     def object_hook(d):
@@ -28,7 +39,8 @@ def get_object_hook(root_path: str):
             path = os.path.join(root_path, rel_path)
             with open(path, "rb") as f:
                 arr = np.load(f)
-            return arr
+            is_scalar = d.get(".is_scalar", arr.ndim == 0)
+            return arr[()] if is_scalar else arr
         else:
             return d
 

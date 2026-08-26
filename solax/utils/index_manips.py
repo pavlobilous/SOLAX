@@ -13,9 +13,9 @@ def int_to_slice(length, i):
     length-1 slice(i, i + 1) that selects the same element from a
     sequence of length "length", normalizing negative "i" as Python
     indexing does. This keeps single-index access uniform with
-    slice/array indexing for classes (e.g. Basis, State, OperatorTerm)
-    whose __getitem__ always returns a new instance rather than a bare
-    element. Raises IndexError if "i" is out of range for "length".
+    slice/array indexing for classes whose __getitem__ always returns a
+    new instance rather than a bare element. Raises IndexError if "i" is
+    out of range for "length".
     """
     if (i >= length) or (i < -length):
         raise IndexError("Index out of range.")

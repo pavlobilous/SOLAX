@@ -1,11 +1,11 @@
 """
-Factories building the three JIT-compiled, vmapped core functions
-driving a NeuralModel: one gradient-descent training step
-(get_trainer), one forward-pass prediction (get_predictor), and one
-metrics evaluation (get_validator). Each factory takes a per-entry
-(non-vectorized) callable and returns a jax.jit-compiled function that
-operates on a full batch, vmapping the callable over the batch
-dimension and, where relevant, batch-averaging its output.
+Factories building three JIT-compiled, vmapped core functions for a
+per-entry model: one gradient-descent training step (get_trainer), one
+forward-pass prediction (get_predictor), and one metrics evaluation
+(get_validator). Each factory takes a per-entry (non-vectorized)
+callable and returns a jax.jit-compiled function that operates on a
+full batch, vmapping the callable over the batch dimension and, where
+relevant, batch-averaging its output.
 """
 from collections.abc import Callable
 import jax
