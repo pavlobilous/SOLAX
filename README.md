@@ -54,7 +54,7 @@ print(matrix.to_scipy().todense())
 
 ## Advanced use
 
-The article *SciPost Phys. Codebases 51* describes the quantumsolax functionality usually necessary for fermionic many-body computations. This section documents additional functionality not covered there.
+The article [SciPost Phys. Codebases 51](https://www.scipost.org/SciPostPhysCodeb.51) describes the quantumsolax functionality usually necessary for fermionic many-body computations. This section documents additional functionality not covered there.
 
 ### Squeezing (deduplication) control
 

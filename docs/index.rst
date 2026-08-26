@@ -4,6 +4,8 @@ quantumsolax
 A `JAX <https://github.com/jax-ml/jax>`_-based Python library for solving fermionic quantum many-body systems with neural network support. The framework allows to efficiently encode and manipulate bases of Slater determinants, quantum states and operators within the second quantization formalism. Operators can be converted to matrices on a given basis for subsequent diagonalization. In case the basis is too large to treat directly, neural-network-assisted support can be leveraged to select the most important Slater determinants. See the paper for the full design and physics background:
 `SciPost Phys. Codebases 51 <https://www.scipost.org/SciPostPhysCodeb.51>`_.
 
+Source code is hosted on `GitHub <https://github.com/pavlo-bilous/quantumsolax>`_.
+
 Installation
 ------------
 
@@ -51,7 +53,7 @@ Hamiltonian and represented as a matrix in a 4-determinant basis):
 Advanced use
 ------------
 
-The article *SciPost Phys. Codebases 51* describes the quantumsolax functionality usually necessary for fermionic many-body computations. This section documents additional functionality not covered there.
+The article `SciPost Phys. Codebases 51 <https://www.scipost.org/SciPostPhysCodeb.51>`_ describes the quantumsolax functionality usually necessary for fermionic many-body computations. This section documents additional functionality not covered there.
 
 Squeezing (deduplication) control
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
