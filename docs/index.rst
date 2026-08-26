@@ -11,7 +11,15 @@ Installation
 
 .. code-block:: bash
 
-   pip install git+https://github.com/pavlo-bilous/quantumsolax.git
+   pip install quantumsolax
+
+This installs a CPU-only JAX by default, following JAX's own convention. For GPU acceleration, additionally install the CUDA build of JAX matching your system:
+
+.. code-block:: bash
+
+   pip install -U "jax[cuda12]"
+
+Requires Python >=3.10.
 
 Quick start
 -----------

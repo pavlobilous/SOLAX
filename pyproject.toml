@@ -36,6 +36,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/pavlo-bilous/quantumsolax"
 Repository = "https://github.com/pavlo-bilous/quantumsolax"
+Documentation = "https://quantumsolax.readthedocs.io/"
 Paper = "https://www.scipost.org/SciPostPhysCodeb.51"
 
 [project.optional-dependencies]
