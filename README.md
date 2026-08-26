@@ -75,11 +75,11 @@ By convention, a class registers itself immediately after its own definition, in
 
 If an attribute isn't itself a solax object, a NumPy array, or a Python primitive (e.g. it holds a JAX array, or a dict keyed by something other than strings), define `__pre_dictify__`/`__post_undictify__` on the class: `__pre_dictify__()` returns a surrogate instance of the same class with only dictifiable attributes (this is what actually gets saved), and `__post_undictify__()` converts that surrogate back after loading. `solax/random_keys.py`'s `RandomKeys` is a worked example — it holds a JAX key, converted to/from plain NumPy for saving.
 
-A class can instead fully delegate its own persistence by defining `__save__` on it: solax then skips dictifying its attributes altogether, and `sx.save()` records only the class's registered label. Loading it back with `sx.load()` returns the class itself, not a reconstructed instance — actually saving and restoring the object's state (say, via a matching `__load__`, or any other mechanism) is entirely the class's own responsibility, done separately from `sx.save`/`sx.load`.
+A class can instead fully implement its own saving/loading mechanism by defining `__save__`/`__load__` on it: `sx.save`/`sx.load` then step aside for such a class entirely, recording only which class it was rather than calling these methods themselves — actually invoking `__save__`/`__load__` and doing the work is left to the class's own code. Not used by any class in the current quantumsolax version.
 
 ### Running tests and linting
 
-solax uses `pytest` for its test suite and `ruff` for linting. Most of the suite runs on a single device (whichever JAX backend is installed -- CPU by default); a few tests specifically exercise JAX's multi-device (`pmap`) batching path and are skipped unless multiple devices are actually available, and the neural-network training tests are marked `slow` since they actually train small models.
+solax uses `pytest` for its test suite and `ruff` for linting. Most of the suite runs on a single device; a few tests specifically exercise JAX's multi-device (`pmap`) batching path and are skipped unless multiple devices are actually available, and the neural-network training tests are marked `slow` since they actually train small models.
 
 ```bash
 pytest                                     # full suite (multi_device auto-skips below 2 devices)
