@@ -74,12 +74,29 @@ class BigBasisManager:
         of the whole pool. The returned cutoff is the midpoint between
         the two sorted absolute-coefficient values straddling that
         fraction.
+
+        Raises:
+            ValueError: if that fraction of "rand_substate" rounds down
+                to 0 or up to all of it -- i.e. no sampled determinant
+                actually falls near the target quantile, so there is no
+                real signal in the sample to calibrate a cutoff from.
+                Draw a larger "rand_substate" (see sample_subbasis) and
+                retry.
         """
         abs_coeff_srt = np.sort(
             np.abs(rand_substate.coeffs)
         )[::-1]
         impt_frac = target_num / len(self.big_basis)
         impt_num = int(impt_frac * len(abs_coeff_srt))
+        if impt_num <= 0 or impt_num >= len(abs_coeff_srt):
+            raise ValueError(
+                'Could not derive a meaningful coefficient cutoff: with '
+                f'{len(abs_coeff_srt)} sampled determinants, a target '
+                f'fraction of {impt_frac:.3g} leaves no sampled '
+                'determinant near the target quantile. Draw a larger '
+                '"rand_substate" (see sample_subbasis) relative to '
+                '"target_num" and "len(big_basis)", and retry.'
+            )
         abs_coeff_cut = \
             (abs_coeff_srt[impt_num - 1] + abs_coeff_srt[impt_num]) / 2
         return abs_coeff_cut
