@@ -7,6 +7,5 @@ build/
 dist/
 *.egg-info/
 .claude/
-_pjax-master-tests/
 .coverage
 docs/_build/
