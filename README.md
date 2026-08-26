@@ -48,10 +48,9 @@ print(matrix.to_scipy().todense())
 
 ## Features
 
-- **`quantum_core`** — `Basis`, `State`, `Operator`, `OperatorTerm`, `OperatorMatrix`: build second-quantized operators, apply them to a basis/state, and construct sparse Hamiltonian matrices, batched and JAX-accelerated (including optional multi-GPU support).
-- **`big_basis_management`** — `BasisClassifier`/`BigBasisManager`: train a small neural-network classifier to predict which determinants in an intractably large basis are likely important, so you can restrict further work to a tractable subset.
+- **`quantum_core`** — `sx.Basis`, `sx.State`, `sx.Operator`, `sx.OperatorTerm`, `sx.OperatorMatrix`: build second-quantized operators, apply them to a basis/state, and construct sparse Hamiltonian matrices, batched and JAX-accelerated (including optional multi-GPU support).
+- **`big_basis_management`** — `sx.BasisClassifier`/`sx.BigBasisManager`: train a small neural-network classifier to predict which determinants in an intractably large basis are likely important, so you can restrict further work to a tractable subset.
 - **`save_load`** — `sx.save`/`sx.load`: persist and restore solax objects (or nested dicts mixing them with NumPy arrays and plain Python values) to/from disk, without pickle.
-- **`neural_framework`** — a generic, reusable FLAX-based training layer underlying `BasisClassifier`, exposed for anyone wanting to build similar NN-assisted tools.
 
 ## Advanced use
 
