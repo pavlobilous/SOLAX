@@ -12,14 +12,11 @@ from .det_encoding import *
 def map_with_ladder(det_code, bit_posit, dagger):
     """
     Acts with a ladder operator on an encoded determinant "det_code"
-            at a bit position "bit_posit".
-        dagger = 0 --- annihilation;
-        dagger = 1 --- creation.
-    The function returns (det_code, valid) where:
-        "det_code" is the resulting encoded determinant;
-        "valid" = 1 or 0 shows if the determinant survived
-            (e.g. for a|0> we get valid==0).
-    Note that the phase factor is not evaluated here.
+    at a bit position "bit_posit" ("dagger" is 0 for annihilation, 1
+    for creation). Returns (det_code, valid), where "det_code" is the
+    resulting encoded determinant and "valid" (1 or 0) shows whether
+    the determinant survived (e.g. for a|0> we get valid == 0). The
+    phase factor is not evaluated here.
     """
     col, res = locate_bit(bit_posit)
     value = extract_bit(det_code, (col, res))
@@ -32,9 +29,9 @@ def map_with_ladder(det_code, bit_posit, dagger):
 
 def map_with_ladseq(det_code, bit_posits, daggers):
     """
-    Acts with a sequence of ladder operators (as usually, from right to left)
-        on an encoded determinant at given bits.
-    See also help(map_with_ladder).
+    Acts with a sequence of ladder operators (as usually, from right
+    to left) on an encoded determinant at given bits. See also
+    map_with_ladder().
     """
     valid = 1
     daggers = jnp.array(daggers, dtype=jnp.uint8)

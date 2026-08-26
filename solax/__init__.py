@@ -19,11 +19,11 @@ Main entry points:
     - RandomKeys: reproducible JAX PRNG subkey generation for the
         NN-assisted machinery.
 """
-from importlib.metadata import version as _version, PackageNotFoundError
+from importlib.metadata import version as _version, PackageNotFoundError as _PackageNotFoundError
 
 try:
     __version__ = _version("quantumsolax")
-except PackageNotFoundError:
+except _PackageNotFoundError:
     __version__ = "unknown"
 
 from .quantum_core import *

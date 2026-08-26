@@ -9,13 +9,15 @@ import jax.numpy as jnp
 def det_from_bits(det_bits, *, module):
     """
     Encodes dets from bits 01.
+
     Input:
-        - "det_bits" can be a 1D array (for 1 det)
-            or a 2D array (for a batch of dets)
-        - "module" is either numpy or jax.numpy
+        - "det_bits" can be a 1D array (for 1 det) or a 2D array (for
+            a batch of dets).
+        - "module" is either numpy or jax.numpy.
+
     Output:
-        Tuple (encoded dets, bitlen),
-            where bitlen stores the number of bits for decoding.
+        Tuple (encoded dets, bitlen), where bitlen stores the number
+        of bits for decoding.
     """
     det_code = module.packbits(det_bits, axis=-1)
     bitlen = det_bits.shape[-1]
@@ -25,12 +27,14 @@ def det_from_bits(det_bits, *, module):
 def det_to_bits(det_code, bitlen, *, module):
     """
     Decodes dets to bits 01.
+
     Input:
-        - "det_code" can be a 1D array (for 1 det)
-            or a 2D array (for a batch of dets)
-        - "bitlen" is the number of bits in dets
-            (it had to be stored at the encoding stage)
-        - "module" is either numpy or jax.numpy
+        - "det_code" can be a 1D array (for 1 det) or a 2D array (for
+            a batch of dets).
+        - "bitlen" is the number of bits in dets (it had to be stored
+            at the encoding stage).
+        - "module" is either numpy or jax.numpy.
+
     Output:
         Decoded dets.
     """

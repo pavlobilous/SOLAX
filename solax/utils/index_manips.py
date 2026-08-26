@@ -29,11 +29,13 @@ def make_1d_index(length, s):
     Normalizes an index/selector "s" for a sequence of length "length"
     into a form directly usable to index a NumPy array along its first
     axis, for use in __getitem__ implementations. Accepts:
+
         - a slice, returned unchanged;
         - a single integer (Integral), converted via int_to_slice();
         - a Sequence (e.g. a list/tuple of ints or booleans), converted
             to a NumPy array;
         - a 1D NumPy array (fancy/boolean indexing), returned as is.
+
     Raises TypeError if "s" is none of the above (or a NumPy array of
     dimension other than 1).
     """

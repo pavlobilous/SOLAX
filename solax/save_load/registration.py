@@ -57,6 +57,7 @@ class SaveLoadRegistry:
             - "init_from_attr": a callable that reconstructs an instance
                 of "cls" from its dictified "__dict__" attributes, passed
                 as keyword arguments (see undictify()).
+
         Raises:
             RuntimeError if "label" is already registered.
         """

@@ -110,6 +110,7 @@ def undictify(arg):
 
     Non-dict "arg" values are returned unchanged. A dict is interpreted
     based on its special keys:
+
         - ".class_with_own_svld": the registered class itself is
             returned (not an instance -- classes opting out of
             dictification via "__save__" are left for their own

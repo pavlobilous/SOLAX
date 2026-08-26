@@ -38,12 +38,12 @@ def sum_by_indexer(arr: NDArray[1, Number],
                    indexer: NDArray[1, Integral]
 ) -> NDArray[1, Number]:
     """
-    - Takes a NumPy 1D array "arr" and
-        a NumPy 1D "indexer" array of integers of the same length.
-    - Returns an array obtained by summing "arr" according to "indexer":
-        The entries from "arr" with repeated indices from "indexer" are summed;
-        "arr" entries where indexer == -1 are ignored.
-    Basically, for each "arr" element, the "indexer" shows "where it goes".
+    Takes a NumPy 1D array "arr" and a NumPy 1D "indexer" array of
+    integers of the same length, and returns an array obtained by
+    summing "arr" according to "indexer": entries from "arr" with
+    repeated indices from "indexer" are summed; "arr" entries where
+    indexer == -1 are ignored. Basically, for each "arr" element, the
+    "indexer" shows "where it goes".
     """
     pds = pd.Series(
         index=indexer[indexer >= 0],
@@ -60,21 +60,20 @@ def squeeze_array(arr: NDArray[2, Any],
                   return_indexer: bool = False
 ) -> NDArray[2, Any]:
     """
-    "Squeezes" 2D arrays, i. e. deletes row duplicates.
-    If each row has an associated number, they are summed over repeated rows.
-    Takes:
-        - arr: a NumPy 2D array to be squeezed;
-        - summed_arr (default=None):
-            an accompanying NumPy 1D with associated numbers for each "arr" row;
-        - return_indexer (default=False):
-            bool indicating if the indexer of the initial array "arr"
-            by the resulting one is additionally returned.
-    Returns:
-        if return_indexer:
-            return (squeezed_arr, numbers_arr)
-        else:
-            return (squeezed_arr, numbers_arr, indexer)
-        (here "numbers_arr" may be None)
+    "Squeezes" 2D arrays, i. e. deletes row duplicates. If each row has
+    an associated number, they are summed over repeated rows.
+
+    Input:
+        - "arr": a NumPy 2D array to be squeezed.
+        - "summed_arr" (default=None): an accompanying NumPy 1D array
+            with associated numbers for each "arr" row.
+        - "return_indexer" (default=False): if True, also returns the
+            indexer of the initial array "arr" by the resulting one.
+
+    Output:
+        "(squeezed_arr, numbers_arr)", or "(squeezed_arr, numbers_arr,
+        indexer)" if "return_indexer" is True ("numbers_arr" may be
+        None).
     """
     pdi = create_byte_pdindex(arr)
     if not pdi.is_unique:
