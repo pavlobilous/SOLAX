@@ -19,6 +19,7 @@ disk, and cleaning up afterwards -- is instead handled with pytest's
 verbatim; only real attributes/values/types are checked.
 """
 
+import json
 import os
 
 import numpy as np
@@ -69,9 +70,13 @@ def test_dump_and_load_dict_with_nd_round_trips(tmp_path):
     np.testing.assert_array_equal(
         loaded["or_nested_version"]["three"], np.arange(12).reshape(3, 4)
     )
-    # "four" was a 0-d numpy scalar (np.arange(6).sum()); it round-trips
-    # through .npy as a 0-d ndarray rather than a bare Python int.
-    np.testing.assert_array_equal(loaded["or_nested_version"]["four"], 15)
+    # "four" is a bare NumPy scalar (np.arange(6).sum(), an np.int64);
+    # it must come back as that same scalar type, not a 0-d ndarray
+    # (np.save/np.load alone would lose that distinction -- see
+    # dumper.py's NDArrayWithPath.is_scalar / loader.py's object_hook).
+    original_four = _example_nested_dict()["or_nested_version"]["four"]
+    assert type(loaded["or_nested_version"]["four"]) is type(original_four)
+    assert loaded["or_nested_version"]["four"] == 15
 
 
 def test_dump_dict_with_nd_saves_one_npy_file_per_array(tmp_path):
@@ -95,6 +100,65 @@ def test_dump_dict_with_nd_rejects_non_dict_top_level(tmp_path):
 
     with pytest.raises(TypeError, match='"nested_dict" must be a dict.'):
         dump_dict_with_nd(np.arange(4), path)
+
+
+# --- bare NumPy scalars vs. genuine 0-d ndarrays ---------------------------
+#
+# np.save/np.load do not themselves distinguish a bare NumPy scalar (an
+# np.generic instance, e.g. np.float64(0.5)) from a true 0-d ndarray: both
+# are written to, and read back from, ".npy" as a 0-d array. dumper.py
+# records which one it originally was (NDArrayWithPath.is_scalar) and
+# loader.py uses that to reconstruct the right one -- these tests check
+# that reconstruction round-trips exactly, for both kinds of value.
+
+def test_numpy_scalar_round_trips_with_exact_type(tmp_path):
+    path = str(tmp_path / "saved_scalars")
+    values = {
+        "f": np.float64(0.5),
+        "i": np.int64(3),
+        "c": np.complex128(1 + 2j),
+        "b": np.bool_(True),
+    }
+
+    dump_dict_with_nd(values, path)
+    loaded = load_dict_with_nd(path)
+
+    for key, original in values.items():
+        assert type(loaded[key]) is type(original), key
+        assert loaded[key] == original, key
+
+
+def test_genuine_0d_ndarray_round_trips_as_ndarray_not_scalar(tmp_path):
+    """A value that is genuinely a 0-d ndarray (not a bare NumPy scalar)
+    must come back as an ndarray, not get collapsed into a scalar."""
+    path = str(tmp_path / "saved_0d_array")
+
+    dump_dict_with_nd({"x": np.array(5.0)}, path)
+    loaded = load_dict_with_nd(path)
+
+    assert isinstance(loaded["x"], np.ndarray)
+    assert loaded["x"].ndim == 0
+    assert loaded["x"] == 5.0
+
+
+def test_old_format_save_without_is_scalar_flag_still_loads_as_scalar(tmp_path):
+    """A directory saved before the ".is_scalar" flag existed (schema.json
+    with only ".ndarray_path") has no way to distinguish a scalar from a
+    genuine 0-d array -- loader.py falls back to treating a 0-d array as a
+    scalar in that case. This must not crash, and must recover a usable
+    scalar (the case that actually occurs in solax's own classes, e.g.
+    Operator's "scalar" term)."""
+    path = tmp_path / "saved_old_format"
+    path.mkdir()
+    with open(path / "x.npy", "bw") as f:
+        np.save(f, np.array(0.5))
+    with open(path / "schema.json", "w") as f:
+        json.dump({"x": {".ndarray_path": "x.npy"}}, f)
+
+    loaded = load_dict_with_nd(str(path))
+
+    assert type(loaded["x"]) is np.float64
+    assert loaded["x"] == 0.5
 
 
 # ---------------------------------------------------------------------------
@@ -483,6 +547,76 @@ def test_save_load_dict_mixing_basis_and_operator(tmp_path):
         assert loaded_term.daggers == term.daggers
         np.testing.assert_array_equal(loaded_term.posits, term.posits)
         np.testing.assert_array_equal(loaded_term.coeffs, term.coeffs)
+
+
+def test_save_load_operator_scalar_term_preserves_exact_type_and_value(tmp_path):
+    """Regression test for two real-world bug reports: an Operator's
+    "scalar" term must survive save/load as the exact same type it was
+    constructed with. Previously a NumPy scalar (e.g. np.float64(0.5))
+    silently became a 0-d ndarray after loading, which broke applying the
+    loaded Operator to a State (TypeError: operand 'State' does not
+    support ufuncs, __array_ufunc__=None) and build_matrix() (TypeError:
+    len() of unsized object). Checked for every scalar kind Operator's
+    constructor accepts: plain Python and NumPy, real/int/complex.
+    """
+    state = sx.State(basis=sx.Basis(["1100", "0011"]), coeffs=np.ones(2))
+    basis = sx.Basis(["1100", "0011"])
+
+    scalars = {
+        "python_float": 0.5,
+        "python_int": 3,
+        "numpy_float64": np.float64(0.5),
+        "numpy_int64": np.int64(3),
+        "numpy_complex128": np.complex128(1 + 2j),
+    }
+    for label, scalar in scalars.items():
+        path = str(tmp_path / f"saved_op_{label}")
+        op = sx.Operator(scalar)
+
+        save(op, path)
+        loaded_op = load(path)
+
+        loaded_scalar = loaded_op._d["scalar"]
+        assert type(loaded_scalar) is type(scalar), label
+        assert loaded_scalar == scalar, label
+
+        # Both originally-reported symptoms must now work on the loaded Operator.
+        np.testing.assert_array_equal(loaded_op(state).coeffs, op(state).coeffs)
+        assert loaded_op.build_matrix(basis).num_nonzero == 2
+
+
+def test_save_load_operator_scalar_term_from_pre_fix_save_still_works(tmp_path):
+    """An Operator saved by a solax version predating this fix has a
+    schema.json without ".is_scalar" -- users who already have such a
+    save on disk must not need to redo it. Simulated here by stripping
+    ".is_scalar" from an otherwise-normal save's schema.json (the ".npy"
+    file contents are identical either way -- only the schema differs).
+    """
+    state = sx.State(basis=sx.Basis(["1100", "0011"]), coeffs=np.ones(2))
+    basis = sx.Basis(["1100", "0011"])
+    path = tmp_path / "saved_op_pre_fix"
+
+    op = sx.Operator(np.float64(0.5))
+    save(op, str(path))
+
+    schema_path = path / "schema.json"
+    schema = json.loads(schema_path.read_text())
+
+    def strip_is_scalar(node):
+        if isinstance(node, dict):
+            node.pop(".is_scalar", None)
+            for v in node.values():
+                strip_is_scalar(v)
+
+    strip_is_scalar(schema)
+    schema_path.write_text(json.dumps(schema))
+
+    loaded_op = load(str(path))
+    loaded_scalar = loaded_op._d["scalar"]
+    assert type(loaded_scalar) is np.float64
+    assert loaded_scalar == 0.5
+    np.testing.assert_array_equal(loaded_op(state).coeffs, op(state).coeffs)
+    assert loaded_op.build_matrix(basis).num_nonzero == 2
 
 
 def test_save_load_deeply_nested_dict_with_random_keys(tmp_path):

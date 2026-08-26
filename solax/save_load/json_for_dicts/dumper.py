@@ -25,10 +25,18 @@ class NDArrayWithPath:
     the nested dict). Used internally by pack_keypaths_valarrs() to
     stand in for each array so JSONEncoderWithND can write it to disk
     as a side effect of JSON-encoding the surrounding dict.
+
+    "is_scalar" records whether "arr" is itself a bare NumPy scalar
+    (an np.generic instance, e.g. np.float64(0.5)) rather than a true
+    ndarray. np.save/np.load do not preserve this distinction -- a
+    scalar is written to ".npy" as, and loaded back as, a 0-d ndarray
+    -- so it is recorded here at save time (see JSONEncoderWithND) and
+    used by loader.py to reconstruct the original scalar on load.
     """
     root_path: str
     rel_path: str
     arr: NDArray[np.generic]
+    is_scalar: bool
 
 
 def save_arr(ndarr_wpath: NDArrayWithPath):
@@ -75,7 +83,7 @@ def pack_keypaths_valarrs(nested_dict: dict, root_path: str, rel_node_path: str)
     for k, v in nested_dict.items():
         if isinstance(v, np.ndarray | np.generic):
             rel_path = os.path.join(rel_node_path, k + ".npy")
-            res_nested_dict[k] = NDArrayWithPath(root_path, rel_path, v)
+            res_nested_dict[k] = NDArrayWithPath(root_path, rel_path, v, isinstance(v, np.generic))
         elif isinstance(v, dict):
             rel_path = os.path.join(rel_node_path, k)
             res_nested_dict[k] = pack_keypaths_valarrs(v, root_path, rel_path)
@@ -90,8 +98,10 @@ class JSONEncoderWithND(json.JSONEncoder):
     NDArrayWithPath instances (as produced by pack_keypaths_valarrs()):
     each one is written to its own ".npy" file as a side effect of
     encoding (via save_arr()), and is represented in the resulting JSON
-    only by a small placeholder dict, {".ndarray_path": rel_path}, which
-    "loader.py"'s object_hook uses to load the array back in.
+    only by a small placeholder dict, {".ndarray_path": rel_path,
+    ".is_scalar": ...}, which "loader.py"'s object_hook uses to load the
+    array back in (".is_scalar" telling it whether to hand back a bare
+    NumPy scalar or a true ndarray, see NDArrayWithPath).
 
     A bare NumPy array/scalar reaching this encoder (i. e. one that was
     not first wrapped in an NDArrayWithPath by pack_keypaths_valarrs())
@@ -105,7 +115,7 @@ class JSONEncoderWithND(json.JSONEncoder):
             raise TypeError("Standalone NumPy objects are not serializable and not savable. Associated path needed.")
         elif isinstance(arg, NDArrayWithPath):
             save_arr(arg)
-            return {".ndarray_path" : arg.rel_path}
+            return {".ndarray_path" : arg.rel_path, ".is_scalar": arg.is_scalar}
         else:
             return super().default(arg)
 
@@ -124,9 +134,10 @@ def dump_dict_with_nd(dict_with_nd: dict, path: str):
 
     Writes a "schema.json" directly under "path" holding the
     JSON-encoded structure (with each array replaced by a
-    {".ndarray_path": ...} placeholder, see JSONEncoderWithND), plus one
-    ".npy" file per NumPy array found anywhere in "dict_with_nd", each
-    at a path mirroring its key hierarchy.
+    {".ndarray_path": ..., ".is_scalar": ...} placeholder, see
+    JSONEncoderWithND), plus one ".npy" file per NumPy array found
+    anywhere in "dict_with_nd", each at a path mirroring its key
+    hierarchy.
 
     Raises:
         TypeError: if "dict_with_nd" is not itself a dict (see
