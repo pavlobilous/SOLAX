@@ -198,6 +198,20 @@ def test_eq_raises_attribute_error():
         mat == mat
 
 
+def test_equal_up_to_precision_via_chop():
+    # The documented replacement for "==": since OperatorMatrix has no
+    # len(), use (a - b).chop(delta).num_nonzero == 0 instead.
+    coord = np.array([[0, 0], [1, 1]])
+    size = np.array([2, 2])
+    a = OperatorMatrix(coord, np.array([0.1 + 0.1 + 0.1, 1.0]), size)
+    b = OperatorMatrix(coord, np.array([0.3, 1.0]), size)
+    assert a._val[0] != b._val[0]  # exact == is false, purely from rounding
+    assert (a - b).chop(1e-9).num_nonzero == 0  # but equal up to precision
+
+    c = OperatorMatrix(coord, np.array([0.3, 1.5]), size)  # genuinely different
+    assert (a - c).chop(1e-9).num_nonzero > 0
+
+
 def test_chop_drops_entries_below_cutoff():
     mat = OperatorMatrix(
         np.array([[0, 0], [0, 1], [1, 0]]),

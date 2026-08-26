@@ -189,6 +189,21 @@ def test_eq_raises_attribute_error():
         basis == state
 
 
+def test_equal_up_to_precision_via_chop():
+    # The documented replacement for "==": len((a - b).chop(delta)) == 0.
+    # Since State holds floating-point coefficients, exact equality would
+    # be governed by incidental rounding (e.g. 0.1+0.1+0.1 != 0.3), so
+    # this is the correct way to compare two States up to a precision.
+    basis = sx.Basis("0010 1001".split())
+    a = sx.State(basis, np.array([0.1 + 0.1 + 0.1, 1.0]))
+    b = sx.State(basis, np.array([0.3, 1.0]))
+    assert a.coeffs[0] != b.coeffs[0]  # exact == is false, purely from rounding
+    assert len((a - b).chop(1e-9)) == 0  # but equal up to precision
+
+    c = sx.State(basis, np.array([0.3, 1.5]))  # genuinely different
+    assert len((a - c).chop(1e-9)) > 0
+
+
 # ---------------------------------------------------------------------------
 # squeeze / is_squeezed
 # ---------------------------------------------------------------------------

@@ -67,10 +67,33 @@ class Operator(Mapping):
     arithmetic (``+``, ``-``, ``*``, ``/``, unary ``-``) with other
     Operators, OperatorTerms, and plain numbers.
 
-    Equality ("==") is deliberately unsupported (raises AttributeError),
-    for the same reason as for OperatorTerm. Call an Operator on a Basis
-    or State to apply it (see __call__); use build_matrix() to get its
-    matrix representation directly.
+    Equality ("==") is deliberately unsupported (raises AttributeError).
+    This class holds floating-point (real/complex) coefficients (in its
+    OperatorTerm values and its optional "scalar" entry), and
+    floating-point arithmetic is not exact, so an exact/bitwise equality
+    check would depend on incidental rounding rather than genuine
+    mathematical equality -- e.g. 0.1 + 0.1 == 0.2 is True, but
+    0.1 + 0.1 + 0.1 == 0.3 is False, purely due to rounding. Comparing
+    two such objects with "==" would therefore give results that look
+    arbitrary rather than meaningful.
+
+    For State/OperatorTerm, this can be checked via
+    "len((a - b).chop(delta)) == 0" for a chosen precision delta > 0
+    (OperatorMatrix similarly, via "(a - b).chop(delta).num_nonzero == 0",
+    since it has no len()). Operator itself has no single "chop the whole
+    thing" call: chop() takes a "key" and only chops one term at a time,
+    and doesn't apply to the "scalar" key at all -- so check each
+    underlying OperatorTerm the same way, plus the scalar entry
+    separately::
+
+        diff = a - b
+        (
+            all(len(diff[key].chop(delta)) == 0 for key in diff if key != "scalar")
+            and abs(diff.get("scalar", 0)) < delta
+        )
+
+    Call an Operator on a Basis or State to apply it (see __call__);
+    use build_matrix() to get its matrix representation directly.
     """
     _d : dict[ Literal["scalar"] | tuple, Number | OperatorTerm ]
 

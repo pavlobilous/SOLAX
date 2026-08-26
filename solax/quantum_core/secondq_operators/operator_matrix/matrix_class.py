@@ -39,11 +39,27 @@ class OperatorMatrix:
     Supports scalar arithmetic (``+``, ``-``, ``*``, ``/``, unary ``-``)
     with other OperatorMatrix instances/numbers, hconj, and the basis-relative
     reshaping operations displace()/window()/shrink_basis() (see each
-    for how they differ). Equality ("==") is deliberately unsupported
-    (raises AttributeError), for the same reason as for the other
-    quantum_core classes. Use to_scipy() to get a real
-    scipy.sparse.coo_array for further numerical work (diagonalization,
-    etc.).
+    for how they differ). Use to_scipy() to get a real scipy.sparse.coo_array
+    for further numerical work (diagonalization, etc.).
+
+    Equality ("==") is deliberately unsupported (raises AttributeError).
+    This class holds floating-point (real/complex) values, and
+    floating-point arithmetic is not exact, so an exact/bitwise equality
+    check would depend on incidental rounding rather than genuine
+    mathematical equality -- e.g. 0.1 + 0.1 == 0.2 is True, but
+    0.1 + 0.1 + 0.1 == 0.3 is False, purely due to rounding. Comparing
+    two such objects with "==" would therefore give results that look
+    arbitrary rather than meaningful.
+
+    Instead, to check whether two objects "a" and "b" of this class are
+    equal up to a chosen precision "delta" (delta > 0), use:
+
+        (a - b).chop(delta).num_nonzero == 0
+
+    i.e. subtract the two objects and chop away entries smaller than
+    "delta"; if no entries remain, "a" and "b" are equal to within that
+    precision. (Unlike State/OperatorTerm, OperatorMatrix has no
+    len() -- use num_nonzero instead.)
     """
     _coord: np.ndarray[np.ndarray[int]]
     _val: np.ndarray[float | complex]

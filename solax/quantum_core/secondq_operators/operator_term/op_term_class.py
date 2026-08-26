@@ -38,10 +38,26 @@ class OperatorTerm(Sequence):
     indexing/slicing, and iteration. See SciPost Phys. Codebases 51
     Sec. 2.4.
 
-    Equality ("==") is deliberately unsupported (raises AttributeError),
-    for the same reason as for State. Call an OperatorTerm on a Basis or
-    State to apply it (see __call__); use build_matrix() to get its
-    matrix representation directly.
+    Equality ("==") is deliberately unsupported (raises AttributeError).
+    This class holds floating-point (real/complex) coefficients, and
+    floating-point arithmetic is not exact, so an exact/bitwise equality
+    check would depend on incidental rounding rather than genuine
+    mathematical equality -- e.g. 0.1 + 0.1 == 0.2 is True, but
+    0.1 + 0.1 + 0.1 == 0.3 is False, purely due to rounding. Comparing
+    two such objects with "==" would therefore give results that look
+    arbitrary rather than meaningful.
+
+    Instead, to check whether two objects "a" and "b" of this class are
+    equal up to a chosen precision "delta" (delta > 0), use:
+
+        len((a - b).chop(delta)) == 0
+
+    i.e. subtract the two objects and chop away entries smaller than
+    "delta"; if nothing remains, "a" and "b" are equal to within that
+    precision.
+
+    Call an OperatorTerm on a Basis or State to apply it (see __call__);
+    use build_matrix() to get its matrix representation directly.
     """
     daggers: tuple[int]
     posits: NDArray[2, Integral]

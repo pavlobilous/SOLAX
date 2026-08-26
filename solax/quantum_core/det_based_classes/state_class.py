@@ -55,8 +55,23 @@ class State(Sequence):
     tuples of positions), and iteration all work as expected, each
     returning a State. See SciPost Phys. Codebases 51 Sec. 2.3.
 
-    Equality ("==") is deliberately unsupported (raises AttributeError)
-    to avoid uncontrollable effects due to machine precision, see the paper.
+    Equality ("==") is deliberately unsupported (raises AttributeError).
+    This class holds floating-point (real/complex) coefficients, and
+    floating-point arithmetic is not exact, so an exact/bitwise equality
+    check would depend on incidental rounding rather than genuine
+    mathematical equality -- e.g. 0.1 + 0.1 == 0.2 is True, but
+    0.1 + 0.1 + 0.1 == 0.3 is False, purely due to rounding. Comparing
+    two such objects with "==" would therefore give results that look
+    arbitrary rather than meaningful.
+
+    Instead, to check whether two objects "a" and "b" of this class are
+    equal up to a chosen precision "delta" (delta > 0), use:
+
+        len((a - b).chop(delta)) == 0
+
+    i.e. subtract the two objects and chop away entries smaller than
+    "delta"; if nothing remains, "a" and "b" are equal to within that
+    precision.
 
     Adding two States (+) merges/sums coefficients at determinants
     shared BETWEEN the two operands (built on Basis.__add__, which

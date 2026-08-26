@@ -272,6 +272,19 @@ def test_eq_raises_attribute_error():
         123 == op_term
 
 
+def test_equal_up_to_precision_via_chop():
+    # The documented replacement for "==": len((a - b).chop(delta)) == 0.
+    daggers = (1, 0)
+    posits = np.array([[0, 2], [1, 3]])
+    a = sx.OperatorTerm(daggers, posits, np.array([0.1 + 0.1 + 0.1, 1.0]))
+    b = sx.OperatorTerm(daggers, posits, np.array([0.3, 1.0]))
+    assert a.coeffs[0] != b.coeffs[0]  # exact == is false, purely from rounding
+    assert len((a - b).chop(1e-9)) == 0  # but equal up to precision
+
+    c = sx.OperatorTerm(daggers, posits, np.array([0.3, 1.5]))  # genuinely different
+    assert len((a - c).chop(1e-9)) > 0
+
+
 # ---------------------------------------------------------------------------
 # __add__
 # ---------------------------------------------------------------------------

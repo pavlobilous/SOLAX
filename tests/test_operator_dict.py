@@ -231,6 +231,40 @@ def test_eq_raises_attribute_error():
         op1 == op2
 
 
+def _approx_eq_operator(a, b, delta):
+    """The documented replacement for Operator == : unlike
+    State/OperatorTerm/OperatorMatrix, Operator.chop() takes a "key" and
+    only chops one term at a time (and not the "scalar" key at all), so
+    there is no single "chop the whole thing" call -- check each
+    underlying OperatorTerm the same way, plus the scalar entry
+    separately."""
+    diff = a - b
+    terms_ok = all(
+        len(diff[key].chop(delta)) == 0 for key in diff if key != "scalar"
+    )
+    scalar_ok = abs(diff.get("scalar", 0)) < delta
+    return terms_ok and scalar_ok
+
+
+def test_equal_up_to_precision_via_per_term_chop():
+    posits = np.array([[0, 2], [1, 3]])
+    a = sx.Operator((1, 0), posits, np.array([0.1 + 0.1 + 0.1, 1.0])) + (0.1 + 0.1 + 0.1)
+    b = sx.Operator((1, 0), posits, np.array([0.3, 1.0])) + 0.3
+    assert a[1, 0].coeffs[0] != b[1, 0].coeffs[0]  # exact == false, purely rounding
+    assert _approx_eq_operator(a, b, 1e-9)  # but equal up to precision, incl. scalar
+
+    c = sx.Operator((1, 0), posits, np.array([0.3, 1.5])) + 0.3  # term differs
+    assert not _approx_eq_operator(a, c, 1e-9)
+
+    d = sx.Operator((1, 0), posits, np.array([0.3, 1.0])) + 0.5  # scalar differs
+    assert not _approx_eq_operator(a, d, 1e-9)
+
+    # also works with no scalar term on either side
+    e = sx.Operator((1, 0), posits, np.array([0.1 + 0.1 + 0.1, 1.0]))
+    f = sx.Operator((1, 0), posits, np.array([0.3, 1.0]))
+    assert _approx_eq_operator(e, f, 1e-9)
+
+
 # ---------------------------------------------------------------------------
 # hconj
 # ---------------------------------------------------------------------------
