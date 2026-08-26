@@ -56,11 +56,7 @@ Hamiltonian and represented as a matrix in a 4-determinant basis):
    :caption: API Reference
 
    api/solax
-   api/quantum_core/index
-   api/save_load/index
-   api/ndarray_tools
-   api/utils
-   api/neural_framework
+   api/package/index
 
 Advanced use
 ------------
